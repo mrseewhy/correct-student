@@ -33,7 +33,7 @@ export function BlogEditor({ initialBody }: { initialBody?: string }) {
       <button type="button" className={toolbarButton} onClick={() => { editor.undo(); editor.focus(); }}>Undo</button>
       <button type="button" className={toolbarButton} onClick={() => { editor.redo(); editor.focus(); }}>Redo</button>
     </div>
-    <BlockNoteView editor={editor} onChange={() => setBody(JSON.stringify(editor.document))} formattingToolbar={false} slashMenu={false} sideMenu={false} filePanel={false} className="rich-text-editor px-2 py-4" />
+    <BlockNoteView editor={editor} onChange={() => setBody(JSON.stringify(editor.document))} formattingToolbar={false} slashMenu={false} sideMenu={false} filePanel={false} className="rich-text-editor min-h-80 px-2 py-4" />
     <input type="hidden" name="body" value={body} />
   </div>;
 }

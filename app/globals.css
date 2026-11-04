@@ -4,7 +4,11 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* BlockNote's editable node, rather than its outer frame, fills the typing area. */
+/* Keep the BlockNote frame and the actual contentEditable typing surface tall. */
+.rich-text-editor.bn-container {
+  min-height: 20rem;
+}
+
 .rich-text-editor .bn-editor {
   min-height: 20rem;
   cursor: text;

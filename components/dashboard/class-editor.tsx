@@ -137,7 +137,7 @@ function BlockNoteEditorInner({
         slashMenu={false}
         sideMenu={false}
         filePanel={false}
-        className="rich-text-editor px-2 py-4"
+        className="rich-text-editor min-h-80 px-2 py-4"
       />
       <input type="hidden" name={name} value={description} />
     </div>
