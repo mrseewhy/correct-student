@@ -22,7 +22,7 @@ Use `npm test`, `npx tsc --noEmit`, `npm run lint`, and `npm run build` for code
 - Admin create, read, update, and delete flows for students, tutors, languages, content types, media types, levels, and pricing plans. Admin account management is restricted to super admins; deletion of user accounts is also restricted to super admins.
 - Admin user search, ban/unban, and password reset controls. Pricing plan edits feed the public pricing page.
 - Admin blog post create, read, update, delete, draft/publish, and optional featured image upload. The post list has database backed title filtering and pagination (10, 20, 50, or 100 posts per page). The BlockNote editor has a toolbar pinned above the article; the excerpt and image description are generated from the post, and new posts use the Article category. Posts without an uploaded image use the default blog image. Six example posts are published through `scripts/seed-blog-posts.mjs`; the script is safe to rerun and leaves existing posts unchanged.
-- Admin class creation and editing, plan access, tutor assignment, materials, and student class start/completion are database backed. A student must start a class before completing it.
+- Admin and tutor class creation, editing, and deletion are database backed. Tutors can manage classes where they are the primary tutor; collaborators can view assigned classes. Drafts require a title; publishing requires a description, an allowed plan, and a YouTube video or audio file when that media type is selected. Text classes can use the full rich text description without a PDF, and descriptions have no word limit. Published cards are visible to all students, while details and materials require an exact current-plan match. A student must start a class before viewing materials or completing it. Audio and PDF files are served through a session and plan protected route.
 - Media metadata can be added by URL; direct file upload is not connected.
 
 The admin Subscriptions area manages **pricing plans** and user plan assignments. It does not manage recurring payments or billing subscriptions.
@@ -30,10 +30,12 @@ The admin Subscriptions area manages **pricing plans** and user plan assignments
 ## Current limits
 
 - The student dashboard and some learning views, plus tutor students, schedules, assignments, and messages, use demo data from `lib/workspace-data.ts`. Database backed class progress is separate.
-- Tutor class drafts are stored in browser `localStorage`, not in the database or public catalog.
+- Legacy tutor drafts saved by an older browser-only form remain in that browser's `localStorage`; they are not automatically imported into database classes.
 - Several admin sections, including products, orders, coupons, and activities, display static records from `lib/admin-data.ts`.
 - The shop has a demo cart only. Checkout, payment, real orders, and paid subscription activation are not implemented. Pricing buttons now carry the selected plan through student signup, but new accounts receive Free access until payment and activation are implemented. Tutors sign up without a plan.
-- Full lesson delivery, detailed progress tracking, profile editing, and platform settings are not implemented.
+- Full lesson delivery, detailed progress tracking, profile editing, and platform settings are not implemented. Class progress is currently a manual start and completion action.
+- Class cover images and uploaded audio/PDF content are stored in database fields. Larger files need a dedicated private storage service. YouTube links are only hidden by class access; anyone with the video URL may be able to open it on YouTube.
+- The class form does not include learning outcomes or outline fields by design. Legacy database columns remain unused. The full plan access matrix, upload edge cases, and tutor ownership flows still need database backed integration and browser tests.
 - A small automated regression suite covers admin permissions and tutor creation, cron authorization, signup role and plan assignment, class completion sequencing, and material access. Broader database and browser regression coverage is still needed. A manual database backed admin CRUD pass verified create, read, update, and delete for students, tutors, admins, languages, content types, media types, levels, pricing plans, and blog posts; the temporary records were removed afterward. Contact read/unread changes and the newsletter's read only UI were also verified. This pass does not cover every validation or permission edge case.
 
 ## Do not change without a new requirement

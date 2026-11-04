@@ -4,14 +4,15 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth/session";
-import { getClass, saveClass, deleteClass, validateClassReferences, type ClassInput } from "@/lib/data/dal/classes";
+import { getClass, saveClass, deleteClass, validateClassReferences, classOptions, type ClassInput } from "@/lib/data/dal/classes";
 import { db } from "@/lib";
 import { mediaTypesTable } from "@/lib/schema";
 import { eq } from "drizzle-orm";
+import { classDescriptionText } from "@/lib/class-description";
 
 const schema = z.object({
   title: z.string().trim().min(3).max(180), slug: z.string().trim().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(160),
-  description: z.string().trim().min(10),
+  description: z.string().trim(),
   durationMinutes: z.coerce.number().int().min(1).max(1440),
   languageId: z.string().min(1), contentTypeId: z.string().min(1), mediaTypeId: z.string().min(1), levelId: z.string().min(1),
   primaryTutorId: z.string().min(1), status: z.enum(["draft", "published"]),
@@ -47,16 +48,19 @@ async function coverImage(file: FormDataEntryValue | null, existing: string | nu
   if (!mime) throw new Error("Cover image must be PNG, JPEG, or WebP.");
   return `data:${mime};base64,${bytes.toString("base64")}`;
 }
-async function inputFrom(form: FormData, existing?: Awaited<ReturnType<typeof getClass>>) {
+async function inputFrom(form: FormData, existing?: Awaited<ReturnType<typeof getClass>>, tutorId?: string) {
   const rawTitle = String(form.get("title") ?? "").trim();
   const slug = String(form.get("slug") ?? "").trim() || rawTitle.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  const options = await classOptions();
+  const draft = form.get("status") === "draft";
   const parsed = schema.parse({
-    title: rawTitle, slug, description: form.get("description"), durationMinutes: form.get("durationMinutes"),
-    languageId: form.get("languageId"), contentTypeId: form.get("contentTypeId"), mediaTypeId: form.get("mediaTypeId"),
-    levelId: form.get("levelId"), primaryTutorId: form.get("primaryTutorId"), status: form.get("status"),
+    title: rawTitle, slug, description: form.get("description") ?? "", durationMinutes: draft && !form.get("durationMinutes") ? 10 : form.get("durationMinutes"),
+    languageId: form.get("languageId") || (draft && options.languages[0]?.id), contentTypeId: form.get("contentTypeId") || (draft && options.contentTypes[0]?.id), mediaTypeId: form.get("mediaTypeId") || (draft && options.mediaTypes.find(x => ["video", "audio", "text"].includes(x.name.toLowerCase()))?.id),
+    levelId: form.get("levelId") || (draft && options.levels[0]?.id), primaryTutorId: tutorId ?? form.get("primaryTutorId"), status: form.get("status"),
   });
+  if (parsed.status === "published" && !classDescriptionText(parsed.description).trim()) throw new Error("Add a description before publishing.");
   const planIds = [...new Set(form.getAll("planIds").filter((v): v is string => typeof v === "string"))];
-  const tutorIds = [...new Set(form.getAll("tutorIds").filter((v): v is string => typeof v === "string"))];
+  const tutorIds = tutorId ? existing?.tutors.map(x => x.tutorId) ?? [] : [...new Set(form.getAll("tutorIds").filter((v): v is string => typeof v === "string"))];
   const [mediaType] = await db.select().from(mediaTypesTable).where(eq(mediaTypesTable.id, parsed.mediaTypeId));
   const kind = mediaType?.name.toLowerCase();
   const materials: ClassInput["materials"] = [];
@@ -91,7 +95,7 @@ export async function createClassAction(form: FormData) {
   let id: string;
   try { id = await saveClass(await inputFrom(form)); }
   catch (error) { redirect(`/admin/classes/create?error=${encodeURIComponent(errorMessage(error))}`); }
-  revalidatePath("/admin/classes"); revalidatePath("/students/classes");
+  revalidatePath("/admin/classes"); revalidatePath("/students/classes"); revalidatePath("/classes");
   redirect(`/admin/classes/${id}`);
 }
 export async function updateClassAction(form: FormData) {
@@ -101,7 +105,7 @@ export async function updateClassAction(form: FormData) {
   if (!existing) redirect("/admin/classes");
   try { await saveClass(await inputFrom(form, existing), id); }
   catch (error) { redirect(`/admin/classes/${id}?error=${encodeURIComponent(errorMessage(error))}`); }
-  revalidatePath("/admin/classes"); revalidatePath(`/admin/classes/${id}`); revalidatePath("/students/classes"); revalidatePath(`/students/classes/${existing.slug}`);
+  revalidatePath("/admin/classes"); revalidatePath(`/admin/classes/${id}`); revalidatePath("/students/classes"); revalidatePath(`/students/classes/${existing.slug}`); revalidatePath("/classes"); revalidatePath(`/classes/${existing.slug}`);
   redirect(`/admin/classes/${id}?saved=1`);
 }
 export async function deleteClassAction(form: FormData) {
@@ -110,6 +114,37 @@ export async function deleteClassAction(form: FormData) {
   const existing = await getClass(id);
   if (!existing) redirect("/admin/classes");
   await deleteClass(id);
-  revalidatePath("/admin/classes"); revalidatePath("/students/classes"); revalidatePath(`/students/classes/${existing.slug}`);
+  revalidatePath("/admin/classes"); revalidatePath("/students/classes"); revalidatePath(`/students/classes/${existing.slug}`); revalidatePath("/classes"); revalidatePath(`/classes/${existing.slug}`);
   redirect("/admin/classes");
+}
+
+export async function createTutorClassAction(form: FormData) {
+  const { user } = await requireRole(["tutor"]);
+  let id: string;
+  try { id = await saveClass(await inputFrom(form, undefined, user.id)); }
+  catch (error) { redirect(`/tutors/classes/create?error=${encodeURIComponent(errorMessage(error))}`); }
+  revalidatePath("/tutors/classes"); revalidatePath("/students/classes"); revalidatePath("/classes");
+  redirect(`/tutors/classes/${id}/edit`);
+}
+
+export async function updateTutorClassAction(form: FormData) {
+  const { user } = await requireRole(["tutor"]);
+  const id = String(form.get("id") ?? "");
+  const existing = await getClass(id);
+  if (!existing || existing.primaryTutorId !== user.id) redirect("/tutors/classes");
+  try { await saveClass(await inputFrom(form, existing, user.id), id); }
+  catch (error) { redirect(`/tutors/classes/${id}/edit?error=${encodeURIComponent(errorMessage(error))}`); }
+  revalidatePath("/tutors/classes"); revalidatePath(`/tutors/classes/${existing.slug}`);
+  revalidatePath("/students/classes"); revalidatePath(`/students/classes/${existing.slug}`); revalidatePath("/classes");
+  redirect(`/tutors/classes/${id}/edit?saved=1`);
+}
+
+export async function deleteTutorClassAction(form: FormData) {
+  const { user } = await requireRole(["tutor"]);
+  const id = String(form.get("id") ?? "");
+  const existing = await getClass(id);
+  if (!existing || existing.primaryTutorId !== user.id) redirect("/tutors/classes");
+  await deleteClass(id);
+  revalidatePath("/tutors/classes"); revalidatePath("/students/classes"); revalidatePath(`/students/classes/${existing.slug}`); revalidatePath("/classes");
+  redirect("/tutors/classes");
 }

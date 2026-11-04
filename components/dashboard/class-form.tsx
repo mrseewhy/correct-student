@@ -28,7 +28,7 @@ export function ClassForm({
   actorId?: string;
 }) {
   const [mediaTypeId, setMediaTypeId] = useState(
-    record?.mediaTypeId ?? options.mediaTypes[0]?.id ?? "",
+    record?.mediaTypeId ?? options.mediaTypes.find(x => ["video", "audio", "text"].includes(x.name.toLowerCase()))?.id ?? "",
   );
   const [tutorIds, setTutorIds] = useState<string[]>(
     record ? record.tutors.map((t) => t.tutorId) : [],
@@ -46,7 +46,7 @@ export function ClassForm({
   // Create-mode role behaviour:
   // - Admin / super-admin: primary tutor dropdown shows only Correct Student Tutor.
   // - Tutor: primary tutor is fixed to the logged-in user (hidden input, no select).
-  const isTutorCreate = actorRole === "tutor" && !record;
+  const isTutorCreate = actorRole === "tutor";
   const isAdminCreate = canManagePlatformTutor && !record;
 
   return (
@@ -81,13 +81,12 @@ export function ClassForm({
         Select media type
         <select
           name="mediaTypeId"
-          required
           value={mediaTypeId}
           onChange={(e) => setMediaTypeId(e.target.value)}
           className={input}
         >
           <option value="">Select media type</option>
-          {options.mediaTypes.map((x) => (
+          {options.mediaTypes.filter(x => ["video", "audio", "text"].includes(x.name.toLowerCase())).map((x) => (
             <option key={x.id} value={x.id}>{x.name}</option>
           ))}
         </select>
@@ -96,8 +95,7 @@ export function ClassForm({
         Language
         <select
           name="languageId"
-          required
-          defaultValue={record?.languageId ?? ""}
+          defaultValue={record?.languageId ?? options.languages[0]?.id ?? ""}
           className={input}
         >
           <option value="">Select language</option>
@@ -110,8 +108,7 @@ export function ClassForm({
         Class type
         <select
           name="contentTypeId"
-          required
-          defaultValue={record?.contentTypeId ?? ""}
+          defaultValue={record?.contentTypeId ?? options.contentTypes[0]?.id ?? ""}
           className={input}
         >
           <option value="">Select type</option>
@@ -124,8 +121,7 @@ export function ClassForm({
         Level
         <select
           name="levelId"
-          required
-          defaultValue={record?.levelId ?? ""}
+          defaultValue={record?.levelId ?? options.levels[0]?.id ?? ""}
           className={input}
         >
           <option value="">Select level</option>
@@ -161,7 +157,6 @@ export function ClassForm({
           type="number"
           min={1}
           max={1440}
-          required
           defaultValue={record?.durationMinutes ?? 10}
           className={input}
         />
@@ -188,7 +183,6 @@ export function ClassForm({
           Primary tutor
           <select
             name="primaryTutorId"
-            required
             defaultValue={defaultPrimaryTutorId ?? ""}
             className={input}
           >
@@ -207,7 +201,7 @@ export function ClassForm({
           </select>
         </label>
       )}
-      <label className="text-sm font-medium">
+      {actorRole !== "tutor" && <label className="text-sm font-medium">
         Other tutors (optional)
         <SearchableMultiSelect
           name="tutorIds"
@@ -216,7 +210,7 @@ export function ClassForm({
           onChange={setTutorIds}
           placeholder="Search tutors..."
         />
-      </label>
+      </label>}
       {mediaKind === "video" && (
         <label className="sm:col-span-2 text-sm font-medium">
           YouTube video URL

@@ -46,6 +46,7 @@ export async function validateClassReferences(input: ClassInput) {
 
 export async function listClasses() {
   return db.select({ id: classesTable.id, slug: classesTable.slug, title: classesTable.title,
+    primaryTutorId: classesTable.primaryTutorId,
     description: classesTable.description, durationMinutes: classesTable.durationMinutes,
     coverImage: classesTable.coverImage, status: classesTable.status,
     language: languagesTable.name, level: levelsTable.name, type: contentTypesTable.name,

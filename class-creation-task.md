@@ -1,5 +1,7 @@
 # Class creation: implementation handoff
 
+> **November 2026 revision:** This document began as an implementation plan and parts of its original state description and checklist are historical. The current flow is database backed. The agreed revisions supersede the older requirements below: learning outcomes and outline fields are removed from the class form; descriptions have no word limit; a draft may be saved with only a title (the application supplies internal defaults for required database fields); PDF content is optional for Text classes; and primary tutors may create, edit, and delete their classes. Existing browser-only tutor drafts are not automatically imported. See `README.md` for current limits.
+
 ## Goal and current state
 
 Build persistent class creation, management, subscription access, and per-student completion. All **published class cards** are visible to students. A student may open details, outline, and materials only when their **current subscription plan** is explicitly checked for that class. There is no automatic plan inheritance: Premium does not grant access to a class checked only for Starter. Draft classes are not visible to students.
