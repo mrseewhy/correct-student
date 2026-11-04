@@ -137,7 +137,7 @@ function BlockNoteEditorInner({
         slashMenu={false}
         sideMenu={false}
         filePanel={false}
-        className="min-h-[300px] px-2 py-4"
+        className="rich-text-editor px-2 py-4"
       />
       <input type="hidden" name={name} value={description} />
     </div>
@@ -174,7 +174,7 @@ export function ClassEditor({
   // Keep the server and hydration render identical; BlockNote needs the browser.
   if (!mounted) {
     return (
-      <div className="min-h-[300px] rounded-xl border border-border bg-card flex items-center justify-center text-sm text-muted-foreground">
+      <div className="min-h-80 rounded-xl border border-border bg-card flex items-center justify-center text-sm text-muted-foreground">
         Loading editor…
       </div>
     );

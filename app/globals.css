@@ -4,6 +4,12 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* BlockNote's editable node, rather than its outer frame, fills the typing area. */
+.rich-text-editor .bn-editor {
+  min-height: 20rem;
+  cursor: text;
+}
+
 /* ---------- Light theme (default) ---------- */
 :root {
   --radius: 0.75rem;
