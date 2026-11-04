@@ -20,7 +20,7 @@ export async function createLanguageAction(formData: FormData) {
     code: formData.get("code"),
     is_active: formData.get("is_active") === "on",
   }, LIST_PATH);
-  await guardAdminWrite(LIST_PATH, "language", () => createLanguage(parsed));
+  await guardAdminWrite(LIST_PATH, "language", () => createLanguage(parsed), "Language created.");
   revalidatePath(LIST_PATH);
 }
 
@@ -33,7 +33,7 @@ export async function updateLanguageAction(formData: FormData) {
     code: formData.get("code"),
     is_active: formData.get("is_active") === "on",
   }, `${LIST_PATH}/${id}`);
-  await guardAdminWrite(`${LIST_PATH}/${id}`, "language", () => updateLanguage(id, parsed));
+  await guardAdminWrite(`${LIST_PATH}/${id}`, "language", () => updateLanguage(id, parsed), "Language updated.");
   revalidatePath(LIST_PATH);
   revalidatePath(`${LIST_PATH}/${id}`);
 }
@@ -41,6 +41,6 @@ export async function updateLanguageAction(formData: FormData) {
 export async function deleteLanguageAction(formData: FormData) {
   await requireRole(["admin", "super-admin"]);
   const id = adminRecordId(formData, LIST_PATH);
-  await guardAdminWrite(LIST_PATH, "language", () => deleteLanguage(id));
+  await guardAdminWrite(LIST_PATH, "language", () => deleteLanguage(id), "Language deleted.");
   revalidatePath(LIST_PATH);
 }

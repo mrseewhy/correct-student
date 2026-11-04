@@ -36,7 +36,7 @@ export async function createPlanAction(formData: FormData) {
     cta: formData.get("cta"),
     featured: formData.get("featured") === "on",
   }, LIST_PATH);
-  await guardAdminWrite(LIST_PATH, "subscription plan", () => createPricingPlan(parsed));
+  await guardAdminWrite(LIST_PATH, "subscription plan", () => createPricingPlan(parsed), "Subscription plan created.");
   invalidatePricing();
   revalidatePath(LIST_PATH);
 }
@@ -56,7 +56,7 @@ export async function updatePlanAction(formData: FormData) {
     cta: formData.get("cta"),
     featured: formData.get("featured") === "on",
   }, `${LIST_PATH}/${id}`);
-  await guardAdminWrite(`${LIST_PATH}/${id}`, "subscription plan", () => updatePricingPlan(id, parsed));
+  await guardAdminWrite(`${LIST_PATH}/${id}`, "subscription plan", () => updatePricingPlan(id, parsed), "Subscription plan updated.");
   invalidatePricing();
   revalidatePath(LIST_PATH);
   revalidatePath(`${LIST_PATH}/${id}`);
@@ -65,7 +65,7 @@ export async function updatePlanAction(formData: FormData) {
 export async function deletePlanAction(formData: FormData) {
   await requireRole(["admin", "super-admin"]);
   const id = adminRecordId(formData, LIST_PATH);
-  await guardAdminWrite(LIST_PATH, "subscription plan", () => deletePricingPlan(id));
+  await guardAdminWrite(LIST_PATH, "subscription plan", () => deletePricingPlan(id), "Subscription plan deleted.");
   invalidatePricing();
   revalidatePath(LIST_PATH);
 }

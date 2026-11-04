@@ -7,10 +7,9 @@ const naira = (value: number) => `₦${value.toLocaleString("en-GB")}`;
 
 const inputClass = "h-10 w-full rounded-md border border-input bg-background px-3";
 
-export default async function Page({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
+export default async function Page() {
   await requireRole(["admin", "super-admin"]);
-  const { error } = await searchParams;
-  const plans = await listPricingPlans();
+    const plans = await listPricingPlans();
 
   return (
     <div className="mx-auto max-w-site">
@@ -22,9 +21,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ [
         </div>
       </div>
 
-      {typeof error === "string" && error && (
-        <p role="alert" className="mt-8 rounded-xl border border-destructive/30 bg-destructive/10 px-5 py-3 text-sm text-destructive">{error}</p>
-      )}
+
 
       <form action={createPlanAction} className="mt-8 grid gap-4 rounded-2xl border border-border bg-card p-5 sm:grid-cols-4">
         <label className="grid gap-2 text-sm font-medium">

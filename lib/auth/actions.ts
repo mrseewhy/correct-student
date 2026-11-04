@@ -7,13 +7,16 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { requireRole } from "@/lib/auth/session";
 import { getUserById } from "@/lib/data/dal/users";
+import { flashToast } from "@/lib/toast";
 import { staffSchema, staffRoleSchema } from "@/validation/staff";
 
 export type StaffState = { message: string; error: boolean };
 
 /** Clears the better-auth session cookie, then walks the user to home. */
 export async function signOutAction() {
-  await auth.api.signOut({ headers: await headers() });
+  try { await auth.api.signOut({ headers: await headers() }); }
+  catch { await flashToast("error", "Could not sign out. Try again."); return; }
+  await flashToast("success", "Signed out.");
   redirect("/");
 }
 

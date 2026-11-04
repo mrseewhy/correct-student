@@ -6,6 +6,7 @@ import type { DashboardNavItem } from "@/lib/dashboard";
 import { RoleGate } from "@/lib/auth/gate";
 import { requireRole } from "@/lib/auth/session";
 import Loading from "./loading";
+import { ToastSlot } from "@/components/toast/toast-slot";
 
 const tutorLinks: readonly DashboardNavItem[] = [
   { slug: "dashboard", label: "Overview", icon: "overview", description: "Your teaching workspace." },
@@ -35,6 +36,7 @@ export default function TutorLayout({ children }: { children: React.ReactNode })
       navigationItems={tutorLinks}
       basePath="/tutors"
       homePath="/tutors/dashboard"
+      toast={<Suspense fallback={null}><ToastSlot /></Suspense>}
       account={
         <Suspense fallback={<AccountMenuFallback />}>
           <TutorAccount />

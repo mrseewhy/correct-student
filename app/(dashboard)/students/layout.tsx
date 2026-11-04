@@ -7,6 +7,7 @@ import { RoleGate } from "@/lib/auth/gate";
 import { requireRole } from "@/lib/auth/session";
 import { pricingPlans } from "@/lib/pricing";
 import Loading from "./loading";
+import { ToastSlot } from "@/components/toast/toast-slot";
 
 const dashboardLinks: readonly DashboardNavItem[] = [
   { slug: "dashboard", label: "Overview", icon: "overview", description: "Your learning journey, all in one place." },
@@ -37,6 +38,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
       navigationItems={dashboardLinks}
       basePath="/students"
       homePath="/students/dashboard"
+      toast={<Suspense fallback={null}><ToastSlot /></Suspense>}
       account={
         <Suspense fallback={<AccountMenuFallback />}>
           <StudentAccount />

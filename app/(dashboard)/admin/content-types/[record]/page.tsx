@@ -5,11 +5,10 @@ import { requireRole } from "@/lib/auth/session";
 import { getContentType } from "@/lib/data/dal/content-types";
 import { updateContentTypeAction, deleteContentTypeAction } from "@/lib/data/actions/content-admin";
 
-export default async function Page({ params, searchParams }: { params: Promise<{ record: string }>; searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
+export default async function Page({ params }: { params: Promise<{ record: string }> }) {
   await requireRole(["admin", "super-admin"]);
   const { record } = await params;
-  const { error } = await searchParams;
-  const item = await getContentType(record);
+    const item = await getContentType(record);
   if (!item) notFound();
 
   return (
@@ -47,9 +46,7 @@ export default async function Page({ params, searchParams }: { params: Promise<{
         </dl>
       </section>
 
-      {typeof error === "string" && error && (
-        <p role="alert" className="mt-8 rounded-xl border border-destructive/30 bg-destructive/10 px-5 py-3 text-sm text-destructive">{error}</p>
-      )}
+
 
       <section className="mt-8 overflow-hidden rounded-2xl border border-border bg-card shadow-sm p-6">
         <h2 className="border-b border-border pb-4 text-xl mb-6">Edit</h2>

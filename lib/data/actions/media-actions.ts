@@ -14,13 +14,13 @@ export async function createMediaAction(formData: FormData) {
     url: formData.get("url"),
     mediaType: formData.get("mediaType"),
   }, "/admin/media");
-  await guardAdminWrite("/admin/media", "media item", () => createMediaItem(parsed));
+  await guardAdminWrite("/admin/media", "media item", () => createMediaItem(parsed), "Media item created.");
   revalidatePath("/admin/media");
 }
 
 export async function deleteMediaAction(formData: FormData) {
   await requireRole(["admin", "super-admin"]);
   const id = adminRecordId(formData, "/admin/media");
-  await guardAdminWrite("/admin/media", "media item", () => deleteMediaItem(id));
+  await guardAdminWrite("/admin/media", "media item", () => deleteMediaItem(id), "Media item deleted.");
   revalidatePath("/admin/media");
 }

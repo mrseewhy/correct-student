@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { useActionToast } from "@/components/toast/use-action-toast";
 import { CircleCheck } from "lucide-react";
 
 import { Field } from "@/components/auth/field";
@@ -12,6 +13,7 @@ const initialState: ContactState = { message: "", error: false, ok: false };
 
 export function ContactForm() {
   const [state, formAction, pending] = useActionState(sendContactMessage, initialState);
+  useActionToast(state);
 
   if (state.ok) {
     return <ContactThankYou note={state.message} />;
@@ -47,7 +49,6 @@ export function ContactForm() {
       <Button type="submit" variant="cta" size="xl" className="w-full" disabled={pending}>
         {pending ? "Sending…" : "Send Message"}
       </Button>
-      {state.message && <p role="alert" className="text-destructive text-sm">{state.message}</p>}
     </form>
   );
 }

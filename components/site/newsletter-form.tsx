@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { useActionToast } from "@/components/toast/use-action-toast";
 import { CircleCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +11,7 @@ const initialState: NewsletterState = { message: "", error: false, ok: false };
 
 export function NewsletterForm() {
   const [state, formAction, pending] = useActionState(subscribeToNewsletter, initialState);
+  useActionToast(state);
 
   if (state.ok) {
     return <ThankYou note={state.message} />;
@@ -21,7 +23,6 @@ export function NewsletterForm() {
       <Input id="newsletter-email" name="email" type="email" required autoComplete="email" placeholder="Enter your email" className="h-11 bg-card" />
       <div aria-hidden="true" className="absolute -left-[9999px] h-px w-px overflow-hidden"><label htmlFor="newsletter-profile-website">Leave this field empty</label><input id="newsletter-profile-website" name="newsletter_profile_website" type="text" tabIndex={-1} autoComplete="off" /></div>
       <Button type="submit" variant="cta" disabled={pending}>{pending ? "Subscribing…" : "Subscribe"}</Button>
-      {state.message && <p role="alert" className="text-destructive text-sm">{state.message}</p>}
     </form>
   );
 }

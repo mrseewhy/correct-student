@@ -16,7 +16,7 @@ export async function createLevelAction(formData: FormData) {
     name: formData.get("name"),
     description: formData.get("description"),
   }, LIST_PATH);
-  await guardAdminWrite(LIST_PATH, "level", () => createLevel(parsed));
+  await guardAdminWrite(LIST_PATH, "level", () => createLevel(parsed), "Level created.");
   revalidatePath(LIST_PATH);
 }
 
@@ -28,7 +28,7 @@ export async function updateLevelAction(formData: FormData) {
     name: formData.get("name"),
     description: formData.get("description"),
   }, backTo);
-  await guardAdminWrite(backTo, "level", () => updateLevel(id, parsed));
+  await guardAdminWrite(backTo, "level", () => updateLevel(id, parsed), "Level updated.");
   revalidatePath(LIST_PATH);
   revalidatePath(backTo);
   redirect(backTo);
@@ -37,6 +37,6 @@ export async function updateLevelAction(formData: FormData) {
 export async function deleteLevelAction(formData: FormData) {
   await requireRole(["admin", "super-admin"]);
   const id = adminRecordId(formData, LIST_PATH);
-  await guardAdminWrite(LIST_PATH, "level", () => deleteLevel(id));
+  await guardAdminWrite(LIST_PATH, "level", () => deleteLevel(id), "Level deleted.");
   revalidatePath(LIST_PATH);
 }

@@ -6,6 +6,7 @@ import type { DashboardNavItem } from "@/lib/dashboard";
 import { RoleGate } from "@/lib/auth/gate";
 import { requireRole } from "@/lib/auth/session";
 import Loading from "./loading";
+import { ToastSlot } from "@/components/toast/toast-slot";
 
 const baseLinks: readonly DashboardNavItem[] = [
   { slug: "dashboard", label: "Overview", icon: "overview", description: "Platform activity at a glance." },
@@ -56,6 +57,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       navigationItems={baseLinks}
       basePath="/admin"
       homePath="/admin/dashboard"
+      toast={<Suspense fallback={null}><ToastSlot /></Suspense>}
       account={
         <Suspense fallback={<AccountMenuFallback />}>
           <AdminAccount />

@@ -15,12 +15,13 @@ import {
 import { deleteUserAction } from "@/lib/data/actions/users-admin";
 import { ActionConfirmationDialog } from "@/components/dashboard/action-confirmation-dialog";
 import { DeleteConfirmationDialog } from "@/components/dashboard/delete-confirmation-dialog";
-import { StatusMessage } from "@/components/dashboard/status-message";
+import { useActionToast } from "@/components/toast/use-action-toast";
 
 const initialState: StaffState = { message: "", error: false };
 
 export function StaffCreateForm() {
   const [state, formAction, pending] = useActionState(createStaffAdminAction, initialState);
+  useActionToast(state);
 
   return (
     <form action={formAction} className="mt-8 grid gap-5 rounded-2xl border border-border bg-card p-5 sm:grid-cols-2 sm:p-6">
@@ -51,9 +52,6 @@ export function StaffCreateForm() {
       <Button type="submit" variant="cta" className="sm:col-span-2" disabled={pending}>
         {pending ? "Adding…" : "Add administrator"}
       </Button>
-      <div className="sm:col-span-2">
-        <StatusMessage message={state.message || null} error={state.error} />
-      </div>
     </form>
   );
 }
@@ -72,8 +70,7 @@ export function StaffRowActions({
   deleteAction: typeof deleteUserAction;
 }) {
   const [banState, banFormAction, banPending] = useActionState(banStaffMemberAction, initialState);
-  const message = banState.message;
-  const error = banState.error;
+  useActionToast(banState);
 
   return (
     <div className="flex flex-col items-start gap-2 sm:items-end">
@@ -117,7 +114,6 @@ export function StaffRowActions({
         </ActionConfirmationDialog>}
         {!isSelf && <DeleteConfirmationDialog action={deleteAction} itemName={role} itemType="administrator" id={userId} />}
       </div>
-      <StatusMessage message={message || null} error={error} />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import type { z } from "zod";
+import { flashToast } from "@/lib/toast";
 
 // Helpers for the admin CRUD server actions. They keep malformed form data and
 // database failures from surfacing as raw framework errors: the admin is sent
@@ -49,9 +50,11 @@ export async function guardAdminWrite<T>(
   backTo: string,
   unitNoun: string,
   run: () => Promise<T>,
+  successMessage: string,
 ): Promise<T> {
+  let result: T;
   try {
-    return await run();
+    result = await run();
   } catch (error) {
     const code = typeof error === "object" && error !== null && "code" in error
       ? String((error as { code: unknown }).code)
@@ -62,4 +65,6 @@ export async function guardAdminWrite<T>(
     console.error("Admin write failed:", error);
     redirect(adminErrorUrl(backTo, message));
   }
+  await flashToast("success", successMessage);
+  return result;
 }

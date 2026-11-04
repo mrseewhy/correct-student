@@ -1,4 +1,5 @@
 "use client";
+import { showToast } from "@/components/toast/toast-region";
 
 type Row = { email: string; subscribedAt: string; status: string };
 
@@ -16,6 +17,7 @@ export function NewsletterCsvButton({ rows }: { rows: Row[] }) {
     link.download = `newsletter-subscribers-${new Date().toISOString().slice(0, 10)}.csv`;
     link.click();
     URL.revokeObjectURL(url);
+    showToast("success", "Subscriber CSV downloaded.");
   }
 
   return (

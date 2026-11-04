@@ -12,6 +12,7 @@ import { userTable } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 import { getUserById } from "@/lib/data/dal/users";
 import { PLATFORM_TUTOR_ID, reassignTutorClasses } from "@/lib/data/dal/classes";
+import { flashToast } from "@/lib/toast";
 
 const LIST_STUDENTS = "/admin/students";
 const LIST_TUTORS = "/admin/tutors";
@@ -35,11 +36,16 @@ async function getAuthorizedTarget(actor: Awaited<ReturnType<typeof getActor>>, 
   const claimedRole = String(formData.get("targetRole") ?? "");
   const target = id ? await getUserById(id) : null;
   if (!target || (claimedRole && target.role !== claimedRole)) {
-    throw new Error("User not found or role changed.");
+    await flashToast("error", "User not found or role changed.");
+    redirect(backForRole(claimedRole));
   }
-  if (target.id === PLATFORM_TUTOR_ID) throw new Error("The platform tutor cannot be managed.");
+  if (target.id === PLATFORM_TUTOR_ID) {
+    await flashToast("error", "The platform tutor cannot be managed.");
+    redirect(backForRole(target.role));
+  }
   if ((target.role === "admin" || target.role === "super-admin") && actor.role !== "super-admin") {
-    throw new Error("Only super-admins can manage administrators.");
+    await flashToast("error", "Only super-admins can manage administrators.");
+    redirect(backForRole(target.role));
   }
   return target;
 }
@@ -95,7 +101,8 @@ export async function updateUserAction(formData: FormData) {
   // caught by the catch-all and reported as a save failure.
   revalidatePath(backForRole(targetRole));
   revalidatePath(backTo);
-  redirect(`${backTo}?saved=1`);
+  await flashToast("success", "User updated.");
+  redirect(backTo);
 }
 
 export async function banUserAction(formData: FormData) {
@@ -115,8 +122,10 @@ export async function banUserAction(formData: FormData) {
   const h = await headers();
   try {
     await auth.api.banUser({ headers: h, body: { userId: id, banReason: reason } });
+    await flashToast("success", "User banned.");
   } catch (err) {
     console.error("banUserAction failed", err);
+    await flashToast("error", "Could not ban the user.");
   }
   revalidatePath(backForRole(targetRole));
   revalidatePath(backTo);
@@ -130,8 +139,10 @@ export async function unbanUserAction(formData: FormData) {
   const h = await headers();
   try {
     await auth.api.unbanUser({ headers: h, body: { userId: id } });
+    await flashToast("success", "User unbanned.");
   } catch (err) {
     console.error("unbanUserAction failed", err);
+    await flashToast("error", "Could not unban the user.");
   }
   revalidatePath(backForRole(targetRole));
   revalidatePath(backTo);
@@ -152,7 +163,8 @@ export async function setUserPasswordAction(formData: FormData) {
     redirect(`${backTo}?error=${encodeURIComponent("Could not update the password.")}`);
   }
   revalidatePath(backTo);
-  redirect(`${backTo}?passwordSet=1`);
+  await flashToast("success", "Password updated.");
+  redirect(backTo);
 }
 
 
@@ -199,6 +211,7 @@ async function createManagedUser(targetRole: "student" | "tutor", previous: Crea
   }
 
   revalidatePath(`/admin/${targetRole === "student" ? "students" : "tutors"}`);
+  await flashToast("success", `${targetRole === "student" ? "Student" : "Tutor"} created.`);
   redirect(`/admin/${targetRole === "student" ? "students" : "tutors"}`);
 }
 
@@ -228,5 +241,6 @@ export async function deleteUserAction(formData: FormData) {
     redirect(`${backTo}?error=${encodeURIComponent("Could not delete the user.")}`);
   }
   revalidatePath(backForRole(targetRole));
+  await flashToast("success", "User deleted.");
   redirect(backForRole(targetRole));
 }

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field } from "@/components/auth/field";
 import type { CreateUserState } from "@/lib/data/actions/users-admin";
+import { useActionToast } from "@/components/toast/use-action-toast";
 
 const initialState: CreateUserState = { message: "", error: false };
 
@@ -19,6 +20,7 @@ export function ManagedUserCreateForm({
   includePlan?: boolean;
 }) {
   const [state, formAction, pending] = useActionState(action, initialState);
+  useActionToast(state);
 
   return (
     <form action={formAction} className="mt-8 grid gap-5 rounded-2xl border border-border bg-card p-5 sm:grid-cols-2 sm:p-6">
@@ -45,11 +47,6 @@ export function ManagedUserCreateForm({
             </select>
           </Field>
         </div>
-      )}
-      {state.message && (
-        <p role={state.error ? "alert" : "status"} className={`sm:col-span-2 text-sm ${state.error ? "text-destructive" : "text-primary"}`}>
-          {state.message}
-        </p>
       )}
       <Button type="submit" variant="cta" className="sm:col-span-2" disabled={pending}>
         {pending ? "Creating…" : submitLabel}

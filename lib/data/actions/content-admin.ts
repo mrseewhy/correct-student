@@ -21,7 +21,7 @@ export async function createContentTypeAction(formData: FormData) {
     description: formData.get("description"),
   }, LIST_PATH);
   await guardAdminWrite(LIST_PATH, "content type",
-    () => createContentType(parsed));
+    () => createContentType(parsed), "Content type created.");
   revalidatePath(LIST_PATH);
 }
 
@@ -34,7 +34,7 @@ export async function updateContentTypeAction(formData: FormData) {
     description: formData.get("description"),
   }, backTo);
   await guardAdminWrite(backTo, "content type",
-    () => updateContentType(id, parsed));
+    () => updateContentType(id, parsed), "Content type updated.");
   revalidatePath(LIST_PATH);
   revalidatePath(backTo);
   redirect(backTo);
@@ -44,6 +44,6 @@ export async function deleteContentTypeAction(formData: FormData) {
   await requireRole(["admin", "super-admin"]);
   const id = adminRecordId(formData, LIST_PATH);
   await guardAdminWrite(LIST_PATH, "content type",
-    () => deleteContentType(id));
+    () => deleteContentType(id), "Content type deleted.");
   revalidatePath(LIST_PATH);
 }

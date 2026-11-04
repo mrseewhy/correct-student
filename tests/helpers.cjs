@@ -13,7 +13,7 @@ function loadTs(relativePath, mocks = {}) {
   const loaded = new Module(filename, module);
   loaded.filename = filename;
   loaded.paths = Module._nodeModulePaths(path.dirname(filename));
-  loaded.require = (id) => Object.hasOwn(mocks, id) ? mocks[id] : module.require(id);
+  loaded.require = (id) => Object.hasOwn(mocks, id) ? mocks[id] : id === "@/lib/toast" ? { flashToast: async () => {} } : module.require(id);
   loaded._compile(compiled, filename);
   return loaded.exports;
 }

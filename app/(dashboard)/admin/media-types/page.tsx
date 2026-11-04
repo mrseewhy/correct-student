@@ -3,10 +3,9 @@ import { requireRole } from "@/lib/auth/session";
 import { listMediaTypes } from "@/lib/data/dal/media-types";
 import { createMediaTypeAction, deleteMediaTypeAction } from "@/lib/data/actions/media-admin";
 
-export default async function Page({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
+export default async function Page() {
   await requireRole(["admin", "super-admin"]);
-  const { error } = await searchParams;
-  const items = await listMediaTypes();
+    const items = await listMediaTypes();
 
   return (
     <div className="mx-auto max-w-site">
@@ -18,9 +17,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ [
         </div>
       </div>
 
-      {typeof error === "string" && error && (
-        <p role="alert" className="mt-8 rounded-xl border border-destructive/30 bg-destructive/10 px-5 py-3 text-sm text-destructive">{error}</p>
-      )}
+
 
       <form action={createMediaTypeAction} className="mt-8 flex flex-wrap items-end gap-4 rounded-2xl border border-border bg-card p-5">
         <label className="grid gap-2 text-sm font-medium">

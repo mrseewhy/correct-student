@@ -20,7 +20,7 @@ export async function createMediaTypeAction(formData: FormData) {
     name: formData.get("name"),
     description: formData.get("description"),
   }, LIST_PATH);
-  await guardAdminWrite(LIST_PATH, "media type", () => createMediaType(parsed));
+  await guardAdminWrite(LIST_PATH, "media type", () => createMediaType(parsed), "Media type created.");
   revalidatePath(LIST_PATH);
 }
 
@@ -32,7 +32,7 @@ export async function updateMediaTypeAction(formData: FormData) {
     name: formData.get("name"),
     description: formData.get("description"),
   }, backTo);
-  await guardAdminWrite(backTo, "media type", () => updateMediaType(id, parsed));
+  await guardAdminWrite(backTo, "media type", () => updateMediaType(id, parsed), "Media type updated.");
   revalidatePath(LIST_PATH);
   revalidatePath(backTo);
   redirect(backTo);
@@ -41,6 +41,6 @@ export async function updateMediaTypeAction(formData: FormData) {
 export async function deleteMediaTypeAction(formData: FormData) {
   await requireRole(["admin", "super-admin"]);
   const id = adminRecordId(formData, LIST_PATH);
-  await guardAdminWrite(LIST_PATH, "media type", () => deleteMediaType(id));
+  await guardAdminWrite(LIST_PATH, "media type", () => deleteMediaType(id), "Media type deleted.");
   revalidatePath(LIST_PATH);
 }

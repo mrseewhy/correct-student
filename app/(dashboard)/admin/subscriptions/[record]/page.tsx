@@ -9,11 +9,10 @@ import { updatePlanAction, deletePlanAction } from "@/lib/data/actions/pricing-p
 
 const inputClass = "h-10 w-full rounded-md border border-input bg-background px-3";
 
-export default async function Page({ params, searchParams }: { params: Promise<{ record: string }>; searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
+export default async function Page({ params }: { params: Promise<{ record: string }> }) {
   await requireRole(["admin", "super-admin"]);
   const { record } = await params;
-  const { error } = await searchParams;
-  const plan = await getPricingPlan(record);
+    const plan = await getPricingPlan(record);
   if (!plan) notFound();
 
   return (
@@ -35,9 +34,7 @@ export default async function Page({ params, searchParams }: { params: Promise<{
         )}
       </div>
 
-      {typeof error === "string" && error && (
-        <p role="alert" className="mt-8 rounded-xl border border-destructive/30 bg-destructive/10 px-5 py-3 text-sm text-destructive">{error}</p>
-      )}
+
 
       <section className="mt-8 overflow-hidden rounded-2xl border border-border bg-card shadow-sm p-6">
         <h2 className="border-b border-border pb-4 text-xl mb-6">Edit</h2>

@@ -4,6 +4,7 @@ import * as React from "react";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
+import { showToast } from "@/components/toast/toast-region";
 
 const emptySubscribe = () => () => {};
 
@@ -21,7 +22,10 @@ export function ThemeToggle() {
       disabled={!mounted}
       aria-label={label}
       title={label}
-      onClick={() => setTheme(dark ? "light" : "dark")}
+      onClick={() => {
+        setTheme(dark ? "light" : "dark");
+        showToast("success", dark ? "Light mode enabled." : "Dark mode enabled.");
+      }}
       className="relative"
     >
       <Moon className="size-5 dark:hidden" aria-hidden />

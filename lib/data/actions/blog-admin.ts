@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { requireRole } from "@/lib/auth/session";
 import { blogPostSchema } from "@/validation/blog-posts";
 import { blogSlugExists, createBlogPost, deleteBlogPost, getBlogPostById, updateBlogPost } from "@/lib/data/dal/blog-posts";
+import { flashToast } from "@/lib/toast";
 
 const listPath = "/admin/blog";
 
@@ -58,6 +59,7 @@ export async function createBlogPostAction(form: FormData) {
       ? error.message : "Check the required fields and article text, then try again.";
     redirect(`${listPath}/create?error=${encodeURIComponent(message)}`);
   }
+  await flashToast("success", "Blog post created.");
   revalidatePath(listPath);
   revalidatePath("/blog");
   redirect(`${listPath}/${id}`);
@@ -67,7 +69,7 @@ export async function updateBlogPostAction(form: FormData) {
   await requireRole(["admin", "super-admin"]);
   const id = String(form.get("id") ?? "");
   const current = await getBlogPostById(id);
-  if (!current) throw new Error("Blog post not found.");
+  if (!current) { await flashToast("error", "Blog post not found."); redirect(listPath); }
   let slug: string;
   try {
     const input = await inputFrom(form, current);
@@ -79,20 +81,23 @@ export async function updateBlogPostAction(form: FormData) {
       ? error.message : "Check the required fields and article text, then try again.";
     redirect(`${listPath}/${id}?error=${encodeURIComponent(message)}`);
   }
+  await flashToast("success", "Blog post saved.");
   revalidatePath(listPath);
   revalidatePath(`${listPath}/${id}`);
   revalidatePath("/blog");
   revalidatePath(`/blog/${current.slug}`);
   revalidatePath(`/blog/${slug}`);
-  redirect(`${listPath}/${id}?saved=1`);
+  redirect(`${listPath}/${id}`);
 }
 
 export async function deleteBlogPostAction(form: FormData) {
   await requireRole(["admin", "super-admin"]);
   const id = String(form.get("id") ?? "");
   const current = await getBlogPostById(id);
-  if (!current) throw new Error("Blog post not found.");
-  await deleteBlogPost(id);
+  if (!current) { await flashToast("error", "Blog post not found."); redirect(listPath); }
+  try { await deleteBlogPost(id); }
+  catch { await flashToast("error", "Could not delete the blog post."); redirect(listPath); }
+  await flashToast("success", "Blog post deleted.");
   revalidatePath(listPath);
   revalidatePath("/blog");
   revalidatePath(`/blog/${current.slug}`);

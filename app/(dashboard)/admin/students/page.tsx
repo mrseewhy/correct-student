@@ -74,9 +74,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ [
         </div>
       </div>
 
-      {typeof sp.error === "string" && sp.error && (
-        <p role="alert" className="mt-8 rounded-xl border border-destructive/30 bg-destructive/10 px-5 py-3 text-sm text-destructive">{sp.error}</p>
-      )}
+
 
       {/* Filters */}
       <form method="get" className="mt-8 grid gap-3 rounded-2xl border border-border bg-card p-5 md:grid-cols-[minmax(0,1fr)_auto_auto_auto_auto] md:items-end">

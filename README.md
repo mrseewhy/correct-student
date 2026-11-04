@@ -19,6 +19,7 @@ For class integration checks, create a **disposable PostgreSQL database**, apply
 ## Implemented
 
 - Public marketing pages, class and shop previews, blog content, pricing, sign up, and sign in.
+- Action feedback appears in a shared toast below the public or dashboard top bar. Errors use the destructive color, successes use the success color, and notifications can be dismissed or close after six seconds.
 - Better Auth with student, tutor, admin, and super admin roles. Protected dashboard pages and server actions check the database session and role; the proxy provides early navigation only.
 - Database backed contact submissions and newsletter signups, with honeypot fields and IP based rate limits.
 - Admin contact inbox with filtering, unread count, and **read/unread status changes only**.
@@ -39,7 +40,7 @@ The admin Subscriptions area manages **pricing plans** and user plan assignments
 - The shop has a demo cart only. Checkout, payment, real orders, and paid subscription activation are not implemented. Pricing buttons now carry the selected plan through student signup, but new accounts receive Free access until payment and activation are implemented. Tutors sign up without a plan.
 - Full lesson delivery, detailed progress tracking, profile editing, and platform settings are not implemented. Class progress is currently a manual start and completion action.
 - Class cover images and uploaded audio/PDF content are stored in database fields. Larger files need a dedicated private storage service. YouTube links are only hidden by class access; anyone with the video URL may be able to open it on YouTube.
-- The class form does not include learning outcomes or outline fields by design. Legacy database columns remain unused. Automated tests cover the plan matrix, protected PDF access, upload validation, and tutor ownership rejection. A complete browser regression pass still needs to be run against an isolated test deployment.
+- The class form does not include learning outcomes or outline fields by design. Legacy database columns remain unused. Automated tests cover the plan matrix, stable material URLs after class edits, text-only completion, protected PDF access, upload validation, and tutor ownership rejection. A complete browser regression pass still needs to be run against an isolated test deployment.
 - The older browser-only tutor drafts are not imported; tutors can recreate them in the database-backed class form. The shop, orders, coupons, schedules, assignments, and messages remain demos until their product and payment workflows are defined.
 - A small automated regression suite covers admin permissions and tutor creation, cron authorization, signup role and plan assignment, class completion sequencing, and material access. Broader database and browser regression coverage is still needed. A manual database backed admin CRUD pass verified create, read, update, and delete for students, tutors, admins, languages, content types, media types, levels, pricing plans, and blog posts; the temporary records were removed afterward. Contact read/unread changes and the newsletter's read only UI were also verified. This pass does not cover every validation or permission edge case.
 

@@ -61,14 +61,15 @@ export async function listClasses() {
 export async function getClass(id: string) {
   const [row] = await db.select().from(classesTable).where(eq(classesTable.id, id));
   if (!row) return null;
-  const [plans, tutors, outcomes, outline, materials] = await Promise.all([
+  const [plans, tutors, outcomes, outline, materials, mediaType] = await Promise.all([
     db.select().from(classSubscriptionsTable).where(eq(classSubscriptionsTable.classId, id)),
     db.select().from(classTutorsTable).where(eq(classTutorsTable.classId, id)),
     db.select().from(classOutcomesTable).where(eq(classOutcomesTable.classId, id)).orderBy(asc(classOutcomesTable.sortOrder)),
     db.select().from(classOutlineItemsTable).where(eq(classOutlineItemsTable.classId, id)).orderBy(asc(classOutlineItemsTable.sortOrder)),
     db.select().from(classMaterialsTable).where(eq(classMaterialsTable.classId, id)).orderBy(asc(classMaterialsTable.sortOrder)),
+    db.select({ name: mediaTypesTable.name }).from(mediaTypesTable).where(eq(mediaTypesTable.id, row.mediaTypeId)),
   ]);
-  return { ...row, plans, tutors, outcomes, outline, materials };
+  return { ...row, plans, tutors, outcomes, outline, materials, mediaTypeName: mediaType[0]?.name ?? "" };
 }
 
 export async function getClassBySlug(slug: string) {
@@ -101,12 +102,24 @@ export async function saveClass(input: ClassInput, id?: string, createdById?: st
     await tx.delete(classTutorsTable).where(eq(classTutorsTable.classId, row.id));
     await tx.delete(classOutcomesTable).where(eq(classOutcomesTable.classId, row.id));
     await tx.delete(classOutlineItemsTable).where(eq(classOutlineItemsTable.classId, row.id));
-    await tx.delete(classMaterialsTable).where(eq(classMaterialsTable.classId, row.id));
+    const oldMaterials = await tx.select().from(classMaterialsTable).where(eq(classMaterialsTable.classId, row.id));
     if (input.planIds.length) await tx.insert(classSubscriptionsTable).values(input.planIds.map(pricingPlanId => ({ classId: row.id, pricingPlanId })));
     if (input.tutorIds.length) await tx.insert(classTutorsTable).values(input.tutorIds.map(tutorId => ({ classId: row.id, tutorId })));
     if (input.outcomes.length) await tx.insert(classOutcomesTable).values(input.outcomes.map((text, sortOrder) => ({ classId: row.id, text, sortOrder })));
     if (input.outline.length) await tx.insert(classOutlineItemsTable).values(input.outline.map((part, sortOrder) => ({ classId: row.id, ...part, sortOrder })));
-    if (input.materials.length) await tx.insert(classMaterialsTable).values(input.materials.map((material, sortOrder) => ({ classId: row.id, ...material, sortOrder })));
+    const retainedIds = new Set<string>();
+    for (const [sortOrder, material] of input.materials.entries()) {
+      const old = oldMaterials.find(item => item.kind === material.kind && !retainedIds.has(item.id));
+      if (old) {
+        retainedIds.add(old.id);
+        await tx.update(classMaterialsTable).set({ ...material, sortOrder }).where(eq(classMaterialsTable.id, old.id));
+      } else {
+        await tx.insert(classMaterialsTable).values({ classId: row.id, ...material, sortOrder });
+      }
+    }
+    for (const old of oldMaterials) {
+      if (!retainedIds.has(old.id)) await tx.delete(classMaterialsTable).where(eq(classMaterialsTable.id, old.id));
+    }
     return row.id;
   });
 }

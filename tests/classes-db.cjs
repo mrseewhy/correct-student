@@ -59,6 +59,7 @@ async function run() {
     status: "published", planIds: [starter.id], tutorIds: [], outcomes: [], outline: [], materials: [{ kind: "pdf", content: Buffer.from("%PDF-1.4").toString("base64"), mimeType: "application/pdf", filename: "lesson.pdf" }] });
   assert.equal((await getClass(classId)).status, "published");
   let materialId = (await getClass(classId)).materials[0].id;
+  const originalMaterialId = materialId;
   const materialRequest = new Request(`http://localhost/api/classes/materials/${materialId}`);
   const materialParams = () => ({ params: Promise.resolve({ id: materialId }) });
   assert.equal((await getMaterial(materialRequest, materialParams())).status, 401);
@@ -73,8 +74,8 @@ async function run() {
   }
   assert.equal(await markClassCompleted(ids.student1, classId), false);
   await markClassStarted(ids.student1, classId);
-  // The plan matrix rewrites materials, so use the current material ID.
   materialId = (await getClass(classId)).materials[0].id;
+  assert.equal(materialId, originalMaterialId, "editing a class preserves its material URL");
   assert.equal((await getMaterial(materialRequest, materialParams())).status, 200, "eligible starter can fetch after starting");
   assert.equal(await markClassCompleted(ids.student1, classId), true);
   assert.ok((await studentClassProgress(ids.student1, classId)).completedAt);

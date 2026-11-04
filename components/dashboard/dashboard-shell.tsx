@@ -53,12 +53,13 @@ function SidebarAccountActions({ basePath, expanded, drawer = false }: { basePat
   </>;
 }
 
-export function DashboardShell({ children, navigationItems, basePath, homePath, account }: {
+export function DashboardShell({ children, navigationItems, basePath, homePath, account, toast }: {
   children: React.ReactNode;
   navigationItems: readonly DashboardNavItem[];
   basePath: string;
   homePath: string;
   account: React.ReactNode;
+  toast: React.ReactNode;
 }) {
   const [expanded, setExpanded] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -105,6 +106,7 @@ export function DashboardShell({ children, navigationItems, basePath, homePath, 
       </header>
 
       <main id="dashboard-content" className="pt-24 px-4 pb-12 md:px-8">
+        {toast}
         {children}
       </main>
     </div>

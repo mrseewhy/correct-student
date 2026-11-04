@@ -7,9 +7,9 @@ import { ClassForm } from "@/components/dashboard/class-form";
 
 export const instant = false;
 
-export default async function Page({ params, searchParams }: { params: Promise<{ record: string }>; searchParams: Promise<{ error?: string; saved?: string }> }) {
+export default async function Page({ params }: { params: Promise<{ record: string }> }) {
   const { user } = await requireRole(["admin", "super-admin"]);
-  const [{ record }, sp, options] = await Promise.all([params, searchParams, classOptions()]);
+  const [{ record }, options] = await Promise.all([params, classOptions()]);
   const item = await getClass(record);
   if (!item) notFound();
   const canManagePlatformTutor = user.role === "admin" || user.role === "super-admin";
@@ -17,8 +17,8 @@ export default async function Page({ params, searchParams }: { params: Promise<{
     <div className="mx-auto max-w-4xl">
       <Link href="/admin/classes" className="text-sm text-primary">Back to classes</Link>
       <h1 className="mt-5 text-3xl">Edit {item.title}</h1>
-      {sp.error && <p role="alert" className="mt-4 text-sm text-destructive">{sp.error}</p>}
-      {sp.saved && <p role="status" className="mt-4 text-sm text-emerald-600">Class saved.</p>}
+
+
       <ClassForm
         options={options}
         record={item}

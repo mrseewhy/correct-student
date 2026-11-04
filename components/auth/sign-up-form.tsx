@@ -11,6 +11,7 @@ import { PasswordInput } from "@/components/auth/password-input";
 import { type UserRole } from "@/lib/auth/permissions";
 import { authClient } from "@/lib/auth-client";
 import { signUpSchema } from "@/validation/auth";
+import { queueToast, showToast } from "@/components/toast/toast-region";
 
 function usernameFromName(name: string) {
   return name
@@ -27,7 +28,6 @@ function usernameFromName(name: string) {
 export function SignUpForm({ initialRole, initialPlan }: { initialRole: Extract<UserRole, "student" | "tutor">; initialPlan: { id: string; name: string; paid: boolean } | null }) {
   const [name, setName] = React.useState("");
   const [pending, setPending] = React.useState(false);
-  const [errorMsg, setErrorMsg] = React.useState("");
   const [customUsername, setCustomUsername] = React.useState<string | null>(null);
 
   const username = customUsername ?? usernameFromName(name);
@@ -35,7 +35,6 @@ export function SignUpForm({ initialRole, initialPlan }: { initialRole: Extract<
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setErrorMsg("");
     const formData = new FormData(event.currentTarget);
     const parsed = signUpSchema.safeParse({
       name: formData.get("name"),
@@ -47,7 +46,7 @@ export function SignUpForm({ initialRole, initialPlan }: { initialRole: Extract<
       plan: "free",
     });
     if (!parsed.success) {
-      setErrorMsg(parsed.error.issues[0]?.message ?? "Check your details and try again.");
+      showToast("error", parsed.error.issues[0]?.message ?? "Check your details and try again.");
       return;
     }
 
@@ -61,15 +60,19 @@ export function SignUpForm({ initialRole, initialPlan }: { initialRole: Extract<
       // the create hook maps `signupRole` onto the real column.
       signupRole: parsed.data.role,
     } as unknown as Parameters<typeof authClient.signUp.email>[0];
-    const result = await authClient.signUp.email(payload);
-    setPending(false);
-
-    if (result.error) {
-      setErrorMsg(result.error.message ?? "Sign-up failed. Try again in a moment.");
-      return;
+    try {
+      const result = await authClient.signUp.email(payload);
+      if (result.error) {
+        showToast("error", result.error.message ?? "Sign-up failed. Try again in a moment.");
+        return;
+      }
+      queueToast("success", "Account created successfully.");
+      window.location.replace("/redirect");
+    } catch {
+      showToast("error", "Sign-up failed. Try again in a moment.");
+    } finally {
+      setPending(false);
     }
-
-    window.location.replace("/redirect");
   }
 
   return (
@@ -142,7 +145,6 @@ export function SignUpForm({ initialRole, initialPlan }: { initialRole: Extract<
         </Field>
       </div>
 
-      {errorMsg && <p role="alert" className="text-destructive text-sm">{errorMsg}</p>}
 
       <Button type="submit" variant="cta" size="xl" className="w-full" disabled={pending}>
         {pending ? "Creating account…" : "Create account"}
