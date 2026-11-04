@@ -182,13 +182,16 @@ async function createManagedUser(targetRole: "student" | "tutor", previous: Crea
         name: parsed.data.name,
         email: parsed.data.email,
         password: parsed.data.password,
-        role: targetRole,
         data: { username: parsed.data.username },
       },
       headers: h,
     });
     if (created?.user?.id) {
-      await db.update(userTable).set({ subscription: plan as "free" | "starter" | "plus" | "premium", updatedAt: new Date() }).where(eq(userTable.id, created.user.id));
+      await db.update(userTable).set({
+        role: targetRole,
+        subscription: plan as "free" | "starter" | "plus" | "premium",
+        updatedAt: new Date(),
+      }).where(eq(userTable.id, created.user.id));
     }
   } catch (error) {
     console.error("createManagedUser failed", error);

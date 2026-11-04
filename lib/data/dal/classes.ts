@@ -135,8 +135,11 @@ export async function markClassStarted(studentId: string, classId: string) {
     .onConflictDoUpdate({ target: [studentClassesTable.studentId, studentClassesTable.classId], set: { lastAccessedAt: new Date() } });
 }
 export async function markClassCompleted(studentId: string, classId: string) {
-  await db.insert(studentClassesTable).values({ studentId, classId, completedAt: new Date(), lastAccessedAt: new Date() })
-    .onConflictDoUpdate({ target: [studentClassesTable.studentId, studentClassesTable.classId], set: { completedAt: new Date(), lastAccessedAt: new Date() } });
+  const [updated] = await db.update(studentClassesTable)
+    .set({ completedAt: new Date(), lastAccessedAt: new Date() })
+    .where(and(eq(studentClassesTable.studentId, studentId), eq(studentClassesTable.classId, classId)))
+    .returning({ classId: studentClassesTable.classId });
+  return Boolean(updated);
 }
 export async function studentClassProgress(studentId: string, classId: string) {
   const [row] = await db.select().from(studentClassesTable).where(and(eq(studentClassesTable.studentId, studentId), eq(studentClassesTable.classId, classId)));

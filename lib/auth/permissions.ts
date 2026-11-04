@@ -2,8 +2,7 @@
 //
 // Roles are a closed, never-user-editable set:
 //   student, tutor, admin, super-admin
-// Admins get every admin operation EXCEPT role management (set-role):
-// only super-admin can create/manage admins and change any role.
+// Only super-admins may change roles or delete users.
 
 import { createAccessControl } from "better-auth/plugins/access";
 
@@ -36,9 +35,9 @@ export const memberRole = ac.newRole({
   session: [],
 });
 
-/** Admin: full user management, but NOT role changes (so they cannot mint admins). */
+/** Admin: user management without role changes or deletion. */
 export const adminRole = ac.newRole({
-  user: ["create", "list", "ban", "impersonate", "delete", "set-password", "set-email", "get", "update"],
+  user: ["create", "list", "ban", "impersonate", "set-password", "set-email", "get", "update"],
   session: ["list", "revoke", "delete"],
 });
 

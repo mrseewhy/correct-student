@@ -7,17 +7,18 @@ import { cleanupExpiredRateLimits } from "@/lib/security/ratelimit";
  * endpoint on a schedule, e.g. once per hour:
  *   GET https://<your-domain>/api/cron/cleanup-rate-limits
  *
- * Optional protection: set CRON_SECRET and send
+ * Set CRON_SECRET and send
  *   Authorization: Bearer <CRON_SECRET>
  * with each request.
  */
 export async function GET(request: Request) {
   const secret = process.env.CRON_SECRET;
-  if (secret) {
-    const auth = request.headers.get("authorization");
-    if (auth !== `Bearer ${secret}`) {
-      return new Response("Unauthorized", { status: 401 });
-    }
+  if (!secret) {
+    return new Response("Service Unavailable", { status: 503 });
+  }
+  const auth = request.headers.get("authorization");
+  if (auth !== `Bearer ${secret}`) {
+    return new Response("Unauthorized", { status: 401 });
   }
 
   try {

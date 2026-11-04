@@ -10,7 +10,7 @@ Correct Student is a Next.js 16 app for language learning, with a public site an
 4. Create the first super admin with `node scripts/seed-super-admin.mjs <email> <name> <username> <password>`.
 5. Start the app with `npm run dev`.
 
-Use `npx tsc --noEmit`, `npm run lint`, and `npm run build` for code checks. The production build fetches Ubuntu and Lato from Google Fonts, so the build environment needs access to that service.
+Use `npm test`, `npx tsc --noEmit`, `npm run lint`, and `npm run build` for code checks. The production build fetches Ubuntu and Lato from Google Fonts, so the build environment needs access to that service.
 
 ## Implemented
 
@@ -22,18 +22,19 @@ Use `npx tsc --noEmit`, `npm run lint`, and `npm run build` for code checks. The
 - Admin create, read, update, and delete flows for students, tutors, languages, content types, media types, levels, and pricing plans. Admin account management is restricted to super admins; deletion of user accounts is also restricted to super admins.
 - Admin user search, ban/unban, and password reset controls. Pricing plan edits feed the public pricing page.
 - Admin blog post create, read, update, delete, draft/publish, and optional featured image upload. The post list has database backed title filtering and pagination (10, 20, 50, or 100 posts per page). The BlockNote editor has a toolbar pinned above the article; the excerpt and image description are generated from the post, and new posts use the Article category. Posts without an uploaded image use the default blog image. Six example posts are published through `scripts/seed-blog-posts.mjs`; the script is safe to rerun and leaves existing posts unchanged.
+- Admin class creation and editing, plan access, tutor assignment, materials, and student class start/completion are database backed. A student must start a class before completing it.
 - Media metadata can be added by URL; direct file upload is not connected.
 
 The admin Subscriptions area manages **pricing plans** and user plan assignments. It does not manage recurring payments or billing subscriptions.
 
 ## Current limits
 
-- Student learning progress, tutor students, schedules, assignments, and messages use demo data from `lib/workspace-data.ts`.
+- The student dashboard and some learning views, plus tutor students, schedules, assignments, and messages, use demo data from `lib/workspace-data.ts`. Database backed class progress is separate.
 - Tutor class drafts are stored in browser `localStorage`, not in the database or public catalog.
-- Several admin sections, including classes, products, orders, coupons, and activities, display static records from `lib/admin-data.ts`.
+- Several admin sections, including products, orders, coupons, and activities, display static records from `lib/admin-data.ts`.
 - The shop has a demo cart only. Checkout, payment, real orders, and paid subscription activation are not implemented. Pricing buttons now carry the selected plan through student signup, but new accounts receive Free access until payment and activation are implemented. Tutors sign up without a plan.
-- Lesson delivery, durable progress tracking, profile editing, and platform settings are not implemented.
-- Automated regression tests are still needed. A manual database backed admin CRUD pass verified create, read, update, and delete for students, tutors, admins, languages, content types, media types, levels, pricing plans, and blog posts; the temporary records were removed afterward. Contact read/unread changes and the newsletter's read only UI were also verified. This pass does not cover every validation or permission edge case.
+- Full lesson delivery, detailed progress tracking, profile editing, and platform settings are not implemented.
+- A small automated regression suite covers admin permissions and tutor creation, cron authorization, signup role and plan assignment, class completion sequencing, and material access. Broader database and browser regression coverage is still needed. A manual database backed admin CRUD pass verified create, read, update, and delete for students, tutors, admins, languages, content types, media types, levels, pricing plans, and blog posts; the temporary records were removed afterward. Contact read/unread changes and the newsletter's read only UI were also verified. This pass does not cover every validation or permission edge case.
 
 ## Do not change without a new requirement
 
@@ -48,6 +49,6 @@ These are project scope boundaries for upcoming work, not a claim that the unfin
 
 ## Operations
 
-The rate limiter stores counters in PostgreSQL. Expired counters can be removed through `DELETE FROM rate_limits WHERE expires_at < now();` or the `/api/cron/cleanup-rate-limits` route. Configure `CRON_SECRET` and a scheduled caller before relying on the route in production.
+The rate limiter stores counters in PostgreSQL. Expired counters can be removed through `DELETE FROM rate_limits WHERE expires_at < now();` or the `/api/cron/cleanup-rate-limits` route. The route returns 503 until `CRON_SECRET` is configured; schedule a caller that sends it as a bearer token.
 
 On Vercel, the limiter uses the platform supplied `x-forwarded-for` header. For a VPS, configure the reverse proxy to overwrite `x-real-ip`, prevent direct access to the app server, and set `TRUST_PROXY_IP_HEADERS=true`. Without a trusted address, rate limiting fails closed.

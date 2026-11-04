@@ -20,7 +20,7 @@ export async function startClassAction(form: FormData) {
 }
 export async function completeClassAction(form: FormData) {
   const { user, item } = await eligible(form);
-  await markClassCompleted(user.id, item.id);
+  if (!(await markClassCompleted(user.id, item.id))) redirect(`/students/classes/${item.slug}`);
   revalidatePath(`/students/classes/${item.slug}`);
   redirect(`/students/classes/${item.slug}`);
 }
