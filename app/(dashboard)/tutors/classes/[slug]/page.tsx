@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { requireRole } from "@/lib/auth/session";
 import { getClassBySlug } from "@/lib/data/dal/classes";
 
+export const instant = false;
+
 export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
   const { user } = await requireRole(["tutor"]);
   const { slug } = await params;

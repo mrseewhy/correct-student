@@ -5,6 +5,8 @@ import { classOptions, getClass } from "@/lib/data/dal/classes";
 import { updateClassAction, deleteClassAction } from "@/lib/data/actions/classes-admin";
 import { ClassForm } from "@/components/dashboard/class-form";
 
+export const instant = false;
+
 export default async function Page({ params, searchParams }: { params: Promise<{ record: string }>; searchParams: Promise<{ error?: string; saved?: string }> }) {
   const { user } = await requireRole(["admin", "super-admin"]);
   const [{ record }, sp, options] = await Promise.all([params, searchParams, classOptions()]);

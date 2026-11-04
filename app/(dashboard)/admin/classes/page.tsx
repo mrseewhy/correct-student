@@ -2,6 +2,8 @@ import Link from "next/link";
 import { requireRole } from "@/lib/auth/session";
 import { listClasses } from "@/lib/data/dal/classes";
 
+export const instant = false;
+
 export default async function Page() {
   await requireRole(["admin", "super-admin"]);
   const classes = await listClasses();

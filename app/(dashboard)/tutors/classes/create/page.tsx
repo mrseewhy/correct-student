@@ -4,6 +4,8 @@ import { classOptions } from "@/lib/data/dal/classes";
 import { createTutorClassAction } from "@/lib/data/actions/classes-admin";
 import { ClassForm } from "@/components/dashboard/class-form";
 
+export const instant = false;
+
 export default async function Page({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const { user } = await requireRole(["tutor"]);
   const [options, sp] = await Promise.all([classOptions(), searchParams]);

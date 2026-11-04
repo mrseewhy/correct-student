@@ -5,6 +5,8 @@ import { requireRole } from "@/lib/auth/session";
 import { canAccessClass, classPlanKeys, getClassBySlug, studentClassProgress } from "@/lib/data/dal/classes";
 import { startClassAction, completeClassAction } from "@/lib/data/actions/class-progress";
 
+export const instant = false;
+
 export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
   const { user } = await requireRole(["student"]);
   const { slug } = await params;

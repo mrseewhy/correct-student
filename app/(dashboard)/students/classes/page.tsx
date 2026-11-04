@@ -3,6 +3,8 @@ import Link from "next/link";
 import { requireRole } from "@/lib/auth/session";
 import { listClasses, classPlanKeys } from "@/lib/data/dal/classes";
 
+export const instant = false;
+
 export default async function Page() {
   const { user } = await requireRole(["student"]);
   const rows = (await listClasses()).filter(x => x.status === "published");

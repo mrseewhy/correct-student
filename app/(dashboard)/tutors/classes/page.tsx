@@ -3,6 +3,8 @@ import { requireRole } from "@/lib/auth/session";
 import Link from "next/link";
 import { tutorClasses } from "@/lib/data/dal/classes";
 
+export const instant = false;
+
 export default async function Page() {
   const { user } = await requireRole(["tutor"]);
   const classes = await tutorClasses(user.id);

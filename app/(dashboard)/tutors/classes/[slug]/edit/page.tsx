@@ -5,6 +5,8 @@ import { classOptions, getClassBySlug } from "@/lib/data/dal/classes";
 import { updateTutorClassAction, deleteTutorClassAction } from "@/lib/data/actions/classes-admin";
 import { ClassForm } from "@/components/dashboard/class-form";
 
+export const instant = false;
+
 export default async function Page({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ error?: string; saved?: string }> }) {
   const { user } = await requireRole(["tutor"]);
   const [{ slug }, sp, options] = await Promise.all([params, searchParams, classOptions()]);
