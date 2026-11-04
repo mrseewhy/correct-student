@@ -1,0 +1,149 @@
+export const instant = false;
+
+import { notFound } from "next/navigation";
+import { requireRole } from "@/lib/auth/session";
+import { getUserById } from "@/lib/data/dal/users";
+import Link from "next/link";
+import { StatusMessage } from "@/components/dashboard/status-message";
+import { DeleteConfirmationDialog } from "@/components/dashboard/delete-confirmation-dialog";
+import {
+  banUserAction,
+  deleteUserAction,
+  setUserPasswordAction,
+  unbanUserAction,
+  updateUserAction,
+} from "@/lib/data/actions/users-admin";
+
+export default async function Page({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ record: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const { record } = await params;
+  const sp = await searchParams;
+  await requireRole(["super-admin"]);
+  const user = await getUserById(record);
+  if (!user || (user.role !== "admin" && user.role !== "super-admin")) notFound();
+
+  const message =
+    typeof sp.error === "string"
+      ? sp.error
+      : typeof sp.saved === "string"
+        ? "Saved."
+        : typeof sp.banned === "string"
+          ? "User banned."
+          : typeof sp.unbanned === "string"
+            ? "User unbanned."
+            : typeof sp.passwordSet === "string"
+              ? "Password updated."
+              : null;
+
+  return (
+    <div className="mx-auto max-w-4xl">
+      <Link href="/admin/staff" className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline">
+        Back to Staff
+      </Link>
+      <div className="mt-8 flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-widest text-primary">Administrator</p>
+          <h1 className="mt-2 text-3xl sm:text-4xl">{user.name}</h1>
+          <p className="mt-3 text-muted-foreground">{user.email}</p>
+        </div>
+        <span className={`rounded-full px-4 py-2 text-sm font-medium ${user.banned ? "bg-destructive/10 text-destructive" : "bg-secondary text-primary"}`}>
+          {user.banned ? "Banned" : "Active"}
+        </span>
+      </div>
+      <div className="mt-4"><StatusMessage message={message} /></div>
+
+      <section className="mt-8 overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+        <h2 className="border-b border-border px-6 py-5 text-xl">Details</h2>
+        <dl className="divide-y divide-border">
+          {[
+            ["ID", user.id],
+            ["Name", user.name],
+            ["Email", user.email],
+            ["Username", user.username],
+            ["Role", user.role === "super-admin" ? "Super admin" : "Admin"],
+            ["Banned", user.banned ? "Yes" : "No"],
+            ["Ban reason", user.banReason ?? "—"],
+            ["Joined", user.createdAt.toLocaleString()],
+            ["Updated", user.updatedAt.toLocaleString()],
+          ].map(([label, value]) => (
+            <div key={label} className="grid gap-2 px-6 py-4 sm:grid-cols-[11rem_1fr]">
+              <dt className="text-sm text-muted-foreground">{label}</dt>
+              <dd className="break-words text-sm font-medium leading-6 text-foreground">{value}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+
+      <section className="mt-8 rounded-2xl border border-border bg-card p-6 shadow-sm">
+        <h2 className="text-xl">Edit profile</h2>
+        <form action={updateUserAction} className="mt-4 grid gap-4 sm:grid-cols-2">
+          <input type="hidden" name="id" value={user.id} />
+          <input type="hidden" name="targetRole" value={user.role} />
+          <label className="text-sm">
+            Name
+            <input name="name" defaultValue={user.name} className="mt-1 w-full rounded-lg border border-input bg-transparent px-2.5 py-1 text-base md:text-sm" />
+          </label>
+          <label className="text-sm">
+            Email
+            <input name="email" type="email" defaultValue={user.email} className="mt-1 w-full rounded-lg border border-input bg-transparent px-2.5 py-1 text-base md:text-sm" />
+          </label>
+          <label className="text-sm">
+            Username
+            <input name="username" defaultValue={user.username} className="mt-1 w-full rounded-lg border border-input bg-transparent px-2.5 py-1 text-base md:text-sm" />
+          </label>
+          <label className="text-sm">
+            Role
+            <select name="role" defaultValue={user.role} className="mt-1 w-full h-11 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base md:text-sm">
+              <option value="admin">Admin</option>
+              <option value="super-admin">Super admin</option>
+            </select>
+          </label>
+          <div className="sm:col-span-2">
+            <button type="submit" className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90">
+              Save changes
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section className="mt-8 rounded-2xl border border-border bg-card p-6 shadow-sm">
+        <h2 className="text-xl">Password override</h2>
+        <form action={setUserPasswordAction} className="mt-4 flex flex-col gap-3 sm:flex-row">
+          <input type="hidden" name="id" value={user.id} />
+          <input type="hidden" name="targetRole" value={user.role} />
+          <input name="newPassword" type="password" placeholder="New password (min 8 chars)" className="w-full rounded-lg border border-input bg-transparent px-2.5 py-1 text-base md:text-sm sm:max-w-sm" />
+          <button type="submit" className="rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-secondary">
+            Set password
+          </button>
+        </form>
+      </section>
+
+      <section className="mt-8 flex flex-wrap gap-3">
+        {user.banned ? (
+          <form action={unbanUserAction}>
+            <input type="hidden" name="id" value={user.id} />
+            <input type="hidden" name="targetRole" value={user.role} />
+            <button type="submit" className="rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-secondary">
+              Unban user
+            </button>
+          </form>
+        ) : (
+          <form action={banUserAction} className="flex items-center gap-2">
+            <input type="hidden" name="id" value={user.id} />
+            <input type="hidden" name="targetRole" value={user.role} />
+            <input name="reason" placeholder="Ban reason" className="rounded-lg border border-input bg-transparent px-2.5 py-1 text-base md:text-sm" />
+            <button type="submit" className="rounded-md bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground hover:opacity-90">
+              Ban user
+            </button>
+          </form>
+        )}
+        <DeleteConfirmationDialog action={deleteUserAction} itemName={user.name} itemType="administrator" id={user.id} />
+      </section>
+    </div>
+  );
+}
