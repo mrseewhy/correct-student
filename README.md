@@ -12,6 +12,8 @@ Correct Student is a Next.js 16 app for language learning, with a public site an
 
 Use `npm test`, `npx tsc --noEmit`, `npm run lint`, and `npm run build` for code checks. The production build fetches Ubuntu and Lato from Google Fonts, so the build environment needs access to that service.
 
+For class integration checks, create a **disposable PostgreSQL database**, apply migrations to it, then run `TEST_DATABASE_URL=<disposable database URL> npm run test:db`. The script creates and removes its own class, users, and lookup rows. It checks all 15 nonempty plan combinations against the four current plans, direct PDF access before and after starting, plan changes, and separate student completion records. Never point `TEST_DATABASE_URL` at a production database.
+
 ## Implemented
 
 - Public marketing pages, class and shop previews, blog content, pricing, sign up, and sign in.
@@ -35,7 +37,8 @@ The admin Subscriptions area manages **pricing plans** and user plan assignments
 - The shop has a demo cart only. Checkout, payment, real orders, and paid subscription activation are not implemented. Pricing buttons now carry the selected plan through student signup, but new accounts receive Free access until payment and activation are implemented. Tutors sign up without a plan.
 - Full lesson delivery, detailed progress tracking, profile editing, and platform settings are not implemented. Class progress is currently a manual start and completion action.
 - Class cover images and uploaded audio/PDF content are stored in database fields. Larger files need a dedicated private storage service. YouTube links are only hidden by class access; anyone with the video URL may be able to open it on YouTube.
-- The class form does not include learning outcomes or outline fields by design. Legacy database columns remain unused. The full plan access matrix, upload edge cases, and tutor ownership flows still need database backed integration and browser tests.
+- The class form does not include learning outcomes or outline fields by design. Legacy database columns remain unused. Automated tests cover the plan matrix, protected PDF access, upload validation, and tutor ownership rejection. A complete browser regression pass still needs to be run against an isolated test deployment.
+- The older browser-only tutor drafts are not imported; tutors can recreate them in the database-backed class form. The shop, orders, coupons, schedules, assignments, and messages remain demos until their product and payment workflows are defined.
 - A small automated regression suite covers admin permissions and tutor creation, cron authorization, signup role and plan assignment, class completion sequencing, and material access. Broader database and browser regression coverage is still needed. A manual database backed admin CRUD pass verified create, read, update, and delete for students, tutors, admins, languages, content types, media types, levels, pricing plans, and blog posts; the temporary records were removed afterward. Contact read/unread changes and the newsletter's read only UI were also verified. This pass does not cover every validation or permission edge case.
 
 ## Do not change without a new requirement
