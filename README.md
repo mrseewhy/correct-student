@@ -10,6 +10,8 @@ Correct Student is a Next.js 16 app for language learning, with a public site an
 4. Create the first super admin with `node scripts/seed-super-admin.mjs <email> <name> <username> <password>`.
 5. Start the app with `npm run dev`.
 
+Run `node scripts/seed-platform-classes.mjs --dry-run` to review the 20 platform class examples, then run it without `--dry-run` to add any that are missing. It leaves existing classes unchanged. The eight Text classes are published with written activities; the 12 Audio and Video classes remain drafts until real media is attached. All use Correct Student tutor as primary tutor.
+
 Use `npm test`, `npx tsc --noEmit`, `npm run lint`, and `npm run build` for code checks. The production build fetches Ubuntu and Lato from Google Fonts, so the build environment needs access to that service.
 
 For class integration checks, create a **disposable PostgreSQL database**, apply migrations to it, then run `TEST_DATABASE_URL=<disposable database URL> npm run test:db`. The script creates and removes its own class, users, and lookup rows. It checks all 15 nonempty plan combinations against the four current plans, direct PDF access before and after starting, plan changes, and separate student completion records. Never point `TEST_DATABASE_URL` at a production database.
