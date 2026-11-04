@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 import { BlockNoteView } from "@blocknote/mantine";
 import { useCreateBlockNote } from "@blocknote/react";
 import type { PartialBlock } from "@blocknote/core";
@@ -8,6 +8,9 @@ import "@blocknote/core/fonts/inter.css";
 import "@blocknote/mantine/style.css";
 
 const toolbarButton = "rounded-md border border-border bg-card px-3 py-1.5 text-sm font-medium hover:bg-secondary focus-visible:outline-2 focus-visible:outline-ring";
+const subscribe = () => () => {};
+const clientSnapshot = () => true;
+const serverSnapshot = () => false;
 
 /**
  * Inner editor that mounts only on the client. BlockNote's `useCreateBlockNote`
@@ -152,6 +155,7 @@ export function ClassEditor({
   initialDescription?: string;
   name?: string;
 }) {
+  const mounted = useSyncExternalStore(subscribe, clientSnapshot, serverSnapshot);
   const initialContent = useMemo(() => {
     if (!initialDescription) return undefined;
     try {
@@ -167,10 +171,8 @@ export function ClassEditor({
     }
   }, [initialDescription]);
 
-  // BlockNote's `useCreateBlockNote` requires `window`, which is unavailable
-  // during server-side rendering. Render a placeholder on the server and
-  // swap in the editor once on the client.
-  if (typeof window === "undefined") {
+  // Keep the server and hydration render identical; BlockNote needs the browser.
+  if (!mounted) {
     return (
       <div className="min-h-[300px] rounded-xl border border-border bg-card flex items-center justify-center text-sm text-muted-foreground">
         Loading editor…
