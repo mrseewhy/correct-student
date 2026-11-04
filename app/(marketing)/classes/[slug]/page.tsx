@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
 import { getClassBySlug, classPlanKeys } from "@/lib/data/dal/classes";
 
+export const instant = false;
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const item = await getClassBySlug(slug);

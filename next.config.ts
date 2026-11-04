@@ -6,9 +6,8 @@ const nextConfig: NextConfig = {
     agentFeedback: true,
     agentUpgrade: "security",
     serverActions: { bodySizeLimit: "4mb" },
+    cacheComponents: true,
   },
-  cacheComponents: true,
-  partialPrefetching: true,
   turbopack: {
     rules: {
       "*.css": {

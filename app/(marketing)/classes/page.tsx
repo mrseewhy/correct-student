@@ -3,6 +3,7 @@ import Link from "next/link";
 import { listClasses, classPlanKeys } from "@/lib/data/dal/classes";
 
 export const metadata: Metadata = { title: "Classes", description: "Browse language classes at Correct Student." };
+export const instant = false;
 export default async function ClassesPage() {
   const rows = (await listClasses()).filter(x => x.status === "published");
   const classes = await Promise.all(rows.map(async item => ({ ...item, plans: await classPlanKeys(item.id) })));

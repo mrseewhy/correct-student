@@ -47,8 +47,8 @@ function FooterColumn({
   );
 }
 
-// The year must be cached (a bare new Date() is an unstable prerender value
-// under cacheComponents). 'hours' revalidates every hour and expires after
+// The year is cached under cacheComponents so the copyright stays stable
+// across prerendering. 'hours' revalidates every hour and expires after
 // a day, so the copyright rolls over shortly after New Year.
 async function getCurrentYear() {
   "use cache";
