@@ -215,6 +215,7 @@ export function ClassForm({
         <label className="sm:col-span-2 text-sm font-medium">
           YouTube video URL
           <input name="youtubeUrl" type="url" defaultValue={storedVideo} className={input} />
+          <span className="mt-1 block text-xs font-normal text-muted-foreground">Optional for now. Students will see “media coming soon” until a video is added.</span>
         </label>
       )}
       {mediaKind === "audio" && (
@@ -231,6 +232,7 @@ export function ClassForm({
               Current audio retained unless replaced.
             </span>
           )}
+          <span className="mt-1 block text-xs font-normal text-muted-foreground">Optional for now. Students will see “media coming soon” until audio is added.</span>
         </label>
       )}
       {mediaKind === "text" && (

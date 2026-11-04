@@ -27,7 +27,7 @@ async function inputFrom(form: FormData, existing?: Awaited<ReturnType<typeof ge
   const parsed = schema.parse({
     title: rawTitle, slug, description: form.get("description") ?? "", durationMinutes: draft && !form.get("durationMinutes") ? 10 : form.get("durationMinutes"),
     languageId: form.get("languageId") || (draft && options.languages[0]?.id), contentTypeId: form.get("contentTypeId") || (draft && options.contentTypes[0]?.id), mediaTypeId: form.get("mediaTypeId") || (draft && options.mediaTypes.find(x => ["video", "audio", "text"].includes(x.name.toLowerCase()))?.id),
-    levelId: form.get("levelId") || (draft && options.levels[0]?.id), primaryTutorId: tutorId ?? form.get("primaryTutorId"), status: form.get("status"),
+    levelId: form.get("levelId") || (draft && options.levels[0]?.id), primaryTutorId: tutorId ? existing?.primaryTutorId ?? tutorId : form.get("primaryTutorId"), status: form.get("status"),
   });
   if (parsed.status === "published" && !classDescriptionText(parsed.description).trim()) throw new Error("Add a description before publishing.");
   const planIds = [...new Set(form.getAll("planIds").filter((v): v is string => typeof v === "string"))];
@@ -66,7 +66,7 @@ export async function createClassAction(form: FormData) {
   let id: string;
   try { id = await saveClass(await inputFrom(form)); }
   catch (error) { redirect(`/admin/classes/create?error=${encodeURIComponent(errorMessage(error))}`); }
-  revalidatePath("/admin/classes"); revalidatePath("/students/classes"); revalidatePath("/classes");
+  revalidatePath("/admin/classes"); revalidatePath("/tutors/classes"); revalidatePath("/students/classes"); revalidatePath("/classes");
   redirect(`/admin/classes/${id}`);
 }
 export async function updateClassAction(form: FormData) {
@@ -76,7 +76,7 @@ export async function updateClassAction(form: FormData) {
   if (!existing) redirect("/admin/classes");
   try { await saveClass(await inputFrom(form, existing), id); }
   catch (error) { redirect(`/admin/classes/${id}?error=${encodeURIComponent(errorMessage(error))}`); }
-  revalidatePath("/admin/classes"); revalidatePath(`/admin/classes/${id}`); revalidatePath("/students/classes"); revalidatePath(`/students/classes/${existing.slug}`); revalidatePath("/classes"); revalidatePath(`/classes/${existing.slug}`);
+  revalidatePath("/admin/classes"); revalidatePath(`/admin/classes/${id}`); revalidatePath("/tutors/classes"); revalidatePath(`/tutors/classes/${existing.slug}`); revalidatePath("/students/classes"); revalidatePath(`/students/classes/${existing.slug}`); revalidatePath("/classes"); revalidatePath(`/classes/${existing.slug}`);
   redirect(`/admin/classes/${id}?saved=1`);
 }
 export async function deleteClassAction(form: FormData) {
@@ -85,16 +85,16 @@ export async function deleteClassAction(form: FormData) {
   const existing = await getClass(id);
   if (!existing) redirect("/admin/classes");
   await deleteClass(id);
-  revalidatePath("/admin/classes"); revalidatePath("/students/classes"); revalidatePath(`/students/classes/${existing.slug}`); revalidatePath("/classes"); revalidatePath(`/classes/${existing.slug}`);
+  revalidatePath("/admin/classes"); revalidatePath("/tutors/classes"); revalidatePath(`/tutors/classes/${existing.slug}`); revalidatePath("/students/classes"); revalidatePath(`/students/classes/${existing.slug}`); revalidatePath("/classes"); revalidatePath(`/classes/${existing.slug}`);
   redirect("/admin/classes");
 }
 
 export async function createTutorClassAction(form: FormData) {
   const { user } = await requireRole(["tutor"]);
   let id: string;
-  try { id = await saveClass(await inputFrom(form, undefined, user.id)); }
+  try { id = await saveClass(await inputFrom(form, undefined, user.id), undefined, user.id); }
   catch (error) { redirect(`/tutors/classes/create?error=${encodeURIComponent(errorMessage(error))}`); }
-  revalidatePath("/tutors/classes"); revalidatePath("/students/classes"); revalidatePath("/classes");
+  revalidatePath("/tutors/classes"); revalidatePath("/admin/classes"); revalidatePath("/students/classes"); revalidatePath("/classes");
   const created = await getClass(id);
   redirect(`/tutors/classes/${created!.slug}/edit`);
 }
@@ -103,10 +103,10 @@ export async function updateTutorClassAction(form: FormData) {
   const { user } = await requireRole(["tutor"]);
   const id = String(form.get("id") ?? "");
   const existing = await getClass(id);
-  if (!existing || existing.primaryTutorId !== user.id) redirect("/tutors/classes");
+  if (!existing || existing.createdById !== user.id) redirect("/tutors/classes");
   try { await saveClass(await inputFrom(form, existing, user.id), id); }
   catch (error) { redirect(`/tutors/classes/${existing.slug}/edit?error=${encodeURIComponent(errorMessage(error))}`); }
-  revalidatePath("/tutors/classes"); revalidatePath(`/tutors/classes/${existing.slug}`);
+  revalidatePath("/tutors/classes"); revalidatePath(`/tutors/classes/${existing.slug}`); revalidatePath("/admin/classes");
   revalidatePath("/students/classes"); revalidatePath(`/students/classes/${existing.slug}`); revalidatePath("/classes");
   const updated = await getClass(id);
   redirect(`/tutors/classes/${updated!.slug}/edit?saved=1`);
@@ -116,8 +116,8 @@ export async function deleteTutorClassAction(form: FormData) {
   const { user } = await requireRole(["tutor"]);
   const id = String(form.get("id") ?? "");
   const existing = await getClass(id);
-  if (!existing || existing.primaryTutorId !== user.id) redirect("/tutors/classes");
+  if (!existing || existing.createdById !== user.id) redirect("/tutors/classes");
   await deleteClass(id);
-  revalidatePath("/tutors/classes"); revalidatePath("/students/classes"); revalidatePath(`/students/classes/${existing.slug}`); revalidatePath("/classes");
+  revalidatePath("/tutors/classes"); revalidatePath("/admin/classes"); revalidatePath("/students/classes"); revalidatePath(`/students/classes/${existing.slug}`); revalidatePath("/classes");
   redirect("/tutors/classes");
 }

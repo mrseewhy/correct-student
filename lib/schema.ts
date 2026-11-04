@@ -244,6 +244,7 @@ export const classesTable = pgTable("classes", {
   mediaTypeId: text("media_type_id").notNull().references(() => mediaTypesTable.id),
   levelId: text("level_id").notNull().references(() => levelsTable.id),
   primaryTutorId: text("primary_tutor_id").notNull().references(() => userTable.id),
+  createdById: text("created_by_id").references(() => userTable.id, { onDelete: "set null" }),
   status: text("status", { enum: ["draft", "published"] }).notNull().default("draft"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

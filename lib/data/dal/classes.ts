@@ -39,21 +39,21 @@ export async function validateClassReferences(input: ClassInput) {
     input.tutorIds.some(id => id === input.primaryTutorId || !options.tutors.some(x => x.id === id))) throw new Error("Choose valid tutors.");
   if (input.planIds.some(id => !options.plans.some(x => x.id === id))) throw new Error("Choose valid plans.");
   if (input.status === "published" && !input.planIds.length) throw new Error("Select at least one subscription to publish.");
-  if (mediaType.name.toLowerCase() === "video" && !input.materials.some(x => x.kind === "youtube") && input.status === "published") throw new Error("Add a YouTube video before publishing.");
-  if (mediaType.name.toLowerCase() === "audio" && !input.materials.some(x => x.kind === "audio") && input.status === "published") throw new Error("Add audio before publishing.");
   return mediaType.name.toLowerCase();
 }
 
 export async function listClasses() {
   return db.select({ id: classesTable.id, slug: classesTable.slug, title: classesTable.title,
-    primaryTutorId: classesTable.primaryTutorId,
+    primaryTutorId: classesTable.primaryTutorId, createdById: classesTable.createdById,
     description: classesTable.description, durationMinutes: classesTable.durationMinutes,
     coverImage: classesTable.coverImage, status: classesTable.status,
     language: languagesTable.name, level: levelsTable.name, type: contentTypesTable.name,
+    mediaType: mediaTypesTable.name,
     tutor: userTable.name })
     .from(classesTable).innerJoin(languagesTable, eq(classesTable.languageId, languagesTable.id))
     .innerJoin(levelsTable, eq(classesTable.levelId, levelsTable.id))
     .innerJoin(contentTypesTable, eq(classesTable.contentTypeId, contentTypesTable.id))
+    .innerJoin(mediaTypesTable, eq(classesTable.mediaTypeId, mediaTypesTable.id))
     .innerJoin(userTable, eq(classesTable.primaryTutorId, userTable.id))
     .orderBy(asc(classesTable.title));
 }
@@ -91,11 +91,11 @@ export async function canAccessClass(classId: string, planKey: string) {
   return Boolean(match);
 }
 
-export async function saveClass(input: ClassInput, id?: string) {
+export async function saveClass(input: ClassInput, id?: string, createdById?: string) {
   return db.transaction(async tx => {
     const [row] = id
       ? await tx.update(classesTable).set({ ...base(input), updatedAt: new Date() }).where(eq(classesTable.id, id)).returning()
-      : await tx.insert(classesTable).values(base(input)).returning();
+      : await tx.insert(classesTable).values({ ...base(input), createdById: createdById ?? input.primaryTutorId }).returning();
     if (!row) throw new Error("Class not found.");
     await tx.delete(classSubscriptionsTable).where(eq(classSubscriptionsTable.classId, row.id));
     await tx.delete(classTutorsTable).where(eq(classTutorsTable.classId, row.id));
@@ -151,6 +151,7 @@ export async function tutorClasses(tutorId: string) {
   const ids = collaborations.map(x => x.classId);
   const all = await listClasses();
   const primaryIds = await db.select({ id: classesTable.id }).from(classesTable).where(eq(classesTable.primaryTutorId, tutorId));
-  const allowed = new Set([...ids, ...primaryIds.map(x => x.id)]);
+  const createdIds = await db.select({ id: classesTable.id }).from(classesTable).where(eq(classesTable.createdById, tutorId));
+  const allowed = new Set([...ids, ...primaryIds.map(x => x.id), ...createdIds.map(x => x.id)]);
   return all.filter(x => allowed.has(x.id));
 }

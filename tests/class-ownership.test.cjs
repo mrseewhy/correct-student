@@ -9,7 +9,7 @@ test("tutors cannot edit or delete another tutor's class", async () => {
     "next/navigation": { redirect: (url) => { throw new Error(`REDIRECT:${url}`); } },
     "@/lib/auth/session": { requireRole: async () => ({ user: { id: "tutor-a", role: "tutor" } }) },
     "@/lib/data/dal/classes": {
-      getClass: async () => ({ id: "class-1", primaryTutorId: "tutor-b" }),
+      getClass: async () => ({ id: "class-1", primaryTutorId: "tutor-a", createdById: "tutor-b" }),
       saveClass: async () => { writes++; }, deleteClass: async () => { writes++; },
     },
     "@/lib": { db: {} },

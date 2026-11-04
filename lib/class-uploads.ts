@@ -1,3 +1,5 @@
+import { DEFAULT_CLASS_COVER } from "@/lib/class-cover";
+
 export function youtubeUrl(value: string) {
   if (!value) return null;
   const url = new URL(value);
@@ -21,7 +23,7 @@ export async function uploaded(file: FormDataEntryValue | null, kind: "audio" | 
 }
 
 export async function coverImage(file: FormDataEntryValue | null, existing: string | null) {
-  if (!(file instanceof File) || !file.size) return existing;
+  if (!(file instanceof File) || !file.size) return existing || DEFAULT_CLASS_COVER;
   if (file.size > 2_000_000) throw new Error("Cover image must be under 2 MB.");
   const bytes = Buffer.from(await file.arrayBuffer());
   const mime = bytes.subarray(0, 8).equals(Buffer.from([137,80,78,71,13,10,26,10])) ? "image/png"

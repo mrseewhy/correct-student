@@ -1,6 +1,6 @@
 # Class creation: implementation handoff
 
-> **November 2026 revision:** This document began as an implementation plan and parts of its original state description and checklist are historical. The current flow is database backed. The agreed revisions supersede the older requirements below: learning outcomes and outline fields are removed from the class form; descriptions have no word limit; a draft may be saved with only a title (the application supplies internal defaults for required database fields); PDF content is optional for Text classes; and primary tutors may create, edit, and delete their classes. Existing browser-only tutor drafts are not automatically imported. See `README.md` for current limits.
+> **November 2026 revision:** This document began as an implementation plan and parts of its original state description and checklist are historical. The current flow is database backed. The agreed revisions supersede the older requirements below: learning outcomes and outline fields are removed from the class form; descriptions have no word limit; a draft may be saved with only a title (the application supplies internal defaults for required database fields); PDF content is optional for Text classes; and creator tutors may create, edit, and delete their classes. Published Video and Audio classes may show “media coming soon” until material is attached, and cannot be completed without material. Existing browser-only tutor drafts are not automatically imported. See `README.md` for current limits.
 
 ## Goal and current state
 

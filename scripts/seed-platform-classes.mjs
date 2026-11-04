@@ -1,10 +1,11 @@
 /** Seed twenty starter class records without replacing classes edited in the admin UI.
- * Usage: node scripts/seed-platform-classes.mjs [--dry-run]
+ * Usage: node scripts/seed-platform-classes.mjs [--dry-run] [--publish-existing]
  */
 import "dotenv/config";
 import { Pool } from "pg";
 
 const platformTutorId = "correct-student-platform-tutor";
+const defaultCover = "/images/class-default.svg";
 const templates = [
   {
     language: "Yoruba",
@@ -59,7 +60,7 @@ const records = templates.flatMap(group => patterns.map((pattern, index) => {
   return {
     ...pattern, language: group.language, title, slug: slug(title),
     description: description(group.language, pattern, group.topics[index]),
-    status: pattern.mediaType === "Text" ? "published" : "draft",
+    status: "published",
     material: pattern.mediaType === "Text" ? textMaterial(group.language, title, group.stories[index === 4 ? 1 : 0], pattern.contentType === "Story") : null,
   };
 }));
@@ -85,7 +86,8 @@ try {
   }
   const { rows: tutors } = await client.query('SELECT id FROM "user" WHERE id = $1 AND role = $2', [platformTutorId, "tutor"]);
   if (!tutors.length) throw new Error("The permanent Correct Student tutor is missing.");
-  let created = 0, skipped = 0;
+  const covers = await client.query("UPDATE classes SET cover_image = $1, updated_at = now() WHERE cover_image IS NULL OR cover_image = ''", [defaultCover]);
+  let created = 0, skipped = 0, publishedExisting = 0;
   for (const item of records) {
     const ids = {
       language: lookups.language.get(item.language.toLowerCase()),
@@ -96,19 +98,26 @@ try {
     const planIds = item.plans.map(key => lookups.plan.get(key));
     if (Object.values(ids).some(id => !id) || planIds.some(id => !id)) throw new Error(`Missing lookup row for ${item.title}.`);
     const { rows } = await client.query(
-      `INSERT INTO classes (slug, title, description, duration_minutes, language_id, content_type_id, media_type_id, level_id, primary_tutor_id, status)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+      `INSERT INTO classes (slug, title, description, duration_minutes, language_id, content_type_id, media_type_id, level_id, primary_tutor_id, created_by_id, status, cover_image)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$9,$10,$11)
        ON CONFLICT (slug) DO NOTHING RETURNING id`,
-      [item.slug, item.title, item.description, item.duration, ids.language, ids.contentType, ids.mediaType, ids.level, platformTutorId, item.status],
+      [item.slug, item.title, item.description, item.duration, ids.language, ids.contentType, ids.mediaType, ids.level, platformTutorId, item.status, defaultCover],
     );
-    if (!rows.length) { skipped++; continue; }
+    if (!rows.length) {
+      skipped++;
+      if (process.argv.includes("--publish-existing")) {
+        const result = await client.query("UPDATE classes SET status = 'published', updated_at = now() WHERE slug = $1 AND primary_tutor_id = $2 AND status = 'draft'", [item.slug, platformTutorId]);
+        publishedExisting += result.rowCount ?? 0;
+      }
+      continue;
+    }
     const classId = rows[0].id;
     for (const planId of planIds) await client.query("INSERT INTO class_subscriptions (class_id, pricing_plan_id) VALUES ($1,$2)", [classId, planId]);
     if (item.material) await client.query("INSERT INTO class_materials (class_id, kind, content, sort_order) VALUES ($1,'text',$2,0)", [classId, item.material]);
     created++;
   }
   await client.query("COMMIT");
-  console.log(`Platform classes: ${created} created, ${skipped} already present.`);
+  console.log(`Platform classes: ${created} created, ${publishedExisting} existing drafts published, ${covers.rowCount ?? 0} covers backfilled, ${skipped} already present.`);
 } catch (error) {
   await client.query("ROLLBACK");
   throw error;

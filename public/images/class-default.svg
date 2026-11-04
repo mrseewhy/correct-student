@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="title">
+  <title id="title">Colourful open book with learning shapes</title>
+  <defs>
+    <linearGradient id="bg" x2="1" y2="1"><stop stop-color="#dcf8e9"/><stop offset="1" stop-color="#a9e9dc"/></linearGradient>
+    <linearGradient id="page" x2="0" y2="1"><stop stop-color="#fffdf3"/><stop offset="1" stop-color="#eaf6e9"/></linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#bg)"/>
+  <circle cx="670" cy="115" r="82" fill="#ffd56b" opacity=".82"/>
+  <circle cx="125" cy="145" r="58" fill="#f89d94" opacity=".75"/>
+  <path d="M60 495c120-60 210-60 336 5s260 62 404-3v103H0v-73z" fill="#7acaa9" opacity=".45"/>
+  <path d="M130 220c112-49 206-31 270 17 63-48 158-66 270-17v267c-104-28-205-24-270 23-65-47-166-51-270-23z" fill="#17615c" opacity=".16" transform="translate(0 18)"/>
+  <path d="M130 220c112-49 206-31 270 17v273c-65-47-166-51-270-23z" fill="url(#page)" stroke="#17615c" stroke-width="10" stroke-linejoin="round"/>
+  <path d="M670 220c-112-49-206-31-270 17v273c65-47 166-51 270-23z" fill="#fff9e4" stroke="#17615c" stroke-width="10" stroke-linejoin="round"/>
+  <path d="M400 237v273" stroke="#17615c" stroke-width="9"/>
+  <path d="M173 290c62-14 121-7 176 22M173 340c58-12 113-6 165 17M451 310c56-29 117-36 176-22M462 358c55-22 108-28 165-18" fill="none" stroke="#79aa9d" stroke-width="14" stroke-linecap="round"/>
+  <path d="M252 117l15 31 34 5-25 24 6 34-30-16-30 16 6-34-25-24 34-5z" fill="#d93450"/>
+  <circle cx="552" cy="129" r="16" fill="#17615c"/>
+  <path d="M548 76v22M548 160v22M495 129h22M579 129h22" stroke="#17615c" stroke-width="8" stroke-linecap="round"/>
+</svg>
