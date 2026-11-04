@@ -7,6 +7,7 @@ import { AuthCard } from "@/components/auth/auth-card";
 import { SignUpForm } from "@/components/auth/sign-up-form";
 import { isRole } from "@/lib/onboarding";
 import type { UserRole } from "@/lib/auth/permissions";
+import { getPricingPlanByKey } from "@/lib/data/dal/pricing-plans";
 
 export const metadata: Metadata = {
   title: "Create your account",
@@ -21,8 +22,7 @@ export default async function SignUpPage({ searchParams }: { searchParams: Promi
   const { role, plan } = await searchParams;
   if (!isRole(role)) redirect("/get-started");
 
-  // Ignore any non-free plan submitted via URL — server enforces free-only signup.
-  const initialPlan = plan === "free" ? "free" : null;
+  const initialPlan = role === "student" && typeof plan === "string" ? await getPricingPlanByKey(plan) : null;
 
   const initialRole = role;
 
@@ -42,7 +42,7 @@ export default async function SignUpPage({ searchParams }: { searchParams: Promi
     >
       <SignUpForm
         initialRole={initialRole as Extract<UserRole, "student" | "tutor">}
-        initialPlan={initialPlan}
+        initialPlan={initialPlan ? { id: initialPlan.planKey, name: initialPlan.name, paid: initialPlan.priceNgn > 0 || initialPlan.priceUsd > 0 || initialPlan.priceGbp > 0 } : null}
       />
     </AuthCard>
   );

@@ -31,7 +31,7 @@ The admin Subscriptions area manages **pricing plans** and user plan assignments
 - Student learning progress, tutor students, schedules, assignments, and messages use demo data from `lib/workspace-data.ts`.
 - Tutor class drafts are stored in browser `localStorage`, not in the database or public catalog.
 - Several admin sections, including classes, products, orders, coupons, and activities, display static records from `lib/admin-data.ts`.
-- The shop has a demo cart only. Checkout, payment, real orders, and paid subscription activation are not implemented; paid pricing buttons lead to the contact page.
+- The shop has a demo cart only. Checkout, payment, real orders, and paid subscription activation are not implemented. Pricing buttons now carry the selected plan through student signup, but new accounts receive Free access until payment and activation are implemented. Tutors sign up without a plan.
 - Lesson delivery, durable progress tracking, profile editing, and platform settings are not implemented.
 - Automated regression tests are still needed. A manual database backed admin CRUD pass verified create, read, update, and delete for students, tutors, admins, languages, content types, media types, levels, pricing plans, and blog posts; the temporary records were removed afterward. Contact read/unread changes and the newsletter's read only UI were also verified. This pass does not cover every validation or permission edge case.
 

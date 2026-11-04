@@ -10,7 +10,6 @@ import { Field } from "@/components/auth/field";
 import { PasswordInput } from "@/components/auth/password-input";
 import { type UserRole } from "@/lib/auth/permissions";
 import { authClient } from "@/lib/auth-client";
-import { isFreePlan, pricingPlans, type PlanId } from "@/lib/pricing";
 import { signUpSchema } from "@/validation/auth";
 
 function usernameFromName(name: string) {
@@ -25,14 +24,14 @@ function usernameFromName(name: string) {
     .replace(/[^a-z0-9._-]/g, "");
 }
 
-export function SignUpForm({ initialRole, initialPlan }: { initialRole: Extract<UserRole, "student" | "tutor">; initialPlan: PlanId | null }) {
+export function SignUpForm({ initialRole, initialPlan }: { initialRole: Extract<UserRole, "student" | "tutor">; initialPlan: { id: string; name: string; paid: boolean } | null }) {
   const [name, setName] = React.useState("");
   const [pending, setPending] = React.useState(false);
   const [errorMsg, setErrorMsg] = React.useState("");
   const [customUsername, setCustomUsername] = React.useState<string | null>(null);
 
   const username = customUsername ?? usernameFromName(name);
-  const plan = initialRole === "student" ? (isFreePlan(initialPlan ?? "free") ? "free" : null) : null;
+  const plan = initialRole === "student" ? (initialPlan ?? { id: "free", name: "Free", paid: false }) : null;
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -45,7 +44,7 @@ export function SignUpForm({ initialRole, initialPlan }: { initialRole: Extract<
       password: formData.get("password"),
       confirmPassword: formData.get("confirmPassword"),
       role: initialRole,
-      plan: plan ?? "free",
+      plan: "free",
     });
     if (!parsed.success) {
       setErrorMsg(parsed.error.issues[0]?.message ?? "Check your details and try again.");
@@ -78,7 +77,7 @@ export function SignUpForm({ initialRole, initialPlan }: { initialRole: Extract<
       <div className="rounded-2xl border border-border bg-secondary/40 p-5 sm:p-6">
         <div className="flex items-center justify-between gap-3">
           <h2 className="font-heading text-base font-bold text-foreground">Your choices</h2>
-          <Link href={plan ? `/get-started?plan=${plan}` : "/get-started"} className="text-sm font-medium text-primary hover:underline">Change role</Link>
+          <Link href={plan ? `/get-started?role=${initialRole}&plan=${encodeURIComponent(plan.id)}` : `/get-started?role=${initialRole}`} className="text-sm font-medium text-primary hover:underline">Change role</Link>
         </div>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           <div className="flex items-center gap-3 rounded-xl border border-primary/30 bg-card p-3.5">
@@ -87,11 +86,12 @@ export function SignUpForm({ initialRole, initialPlan }: { initialRole: Extract<
             <Check className="ml-auto size-4 shrink-0 text-primary" aria-hidden />
           </div>
           {initialRole === "student" && plan && <div className="flex items-center justify-between gap-3 rounded-xl border border-primary/30 bg-card p-3.5">
-            <div><p className="text-xs text-muted-foreground">Subscription</p><p className="font-heading font-bold text-foreground">{pricingPlans.find((item) => item.id === plan)?.name}</p></div>
+            <div><p className="text-xs text-muted-foreground">Selected plan</p><p className="font-heading font-bold text-foreground">{plan.name}</p></div>
             <Check className="size-4 shrink-0 text-primary" aria-hidden />
           </div>}
         </div>
         {initialRole === "student" && <Link href="/pricing" className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline">Compare plans <ArrowRight className="size-3.5" aria-hidden /></Link>}
+        {plan?.paid && <p className="mt-3 text-sm text-muted-foreground">Your account will begin on Free. Paid access requires payment, which is not available yet.</p>}
       </div>
 
       <Field label="Full name" htmlFor="name">

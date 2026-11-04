@@ -75,16 +75,9 @@ export function PricingPlans({ plans }: { plans: PricingPlan[] }) {
                 </span>
                 <span className="text-sm text-muted-foreground">{plan.prices.NGN === 0 ? "/ forever" : "/ month"}</span>
               </div>
-              {plan.prices.NGN === 0 ? (
-                <Link href={`/get-started?plan=${plan.id}`} className={cn(buttonVariants({ variant: plan.featured ? "cta" : "outline", size: "lg" }), "mt-7 w-full")}>
-                  {plan.cta} <ArrowRight className="size-4" aria-hidden />
-                </Link>
-              ) : (
-                // Paid signup needs a payment gateway; route interest to the contact page meanwhile.
-                <Link href="/contact-us" className={cn(buttonVariants({ variant: plan.featured ? "cta" : "outline", size: "lg" }), "mt-7 w-full")}>
-                  {plan.cta} <ArrowRight className="size-4" aria-hidden />
-                </Link>
-              )}
+              <Link href={`/get-started?role=student&plan=${encodeURIComponent(plan.id)}`} className={cn(buttonVariants({ variant: plan.featured ? "cta" : "outline", size: "lg" }), "mt-7 w-full")}>
+                {plan.cta} <ArrowRight className="size-4" aria-hidden />
+              </Link>
               <div className="my-7 border-t border-border" />
               <p className="font-heading text-xs font-bold tracking-wider text-foreground uppercase">What&apos;s included</p>
               <ul className="mt-4 space-y-3.5">

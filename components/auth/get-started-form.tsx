@@ -5,7 +5,6 @@ import { ArrowRight, Check, GraduationCap, Presentation } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { pricingPlans, type PlanId } from "@/lib/pricing";
 
 const roles = [
   {
@@ -20,16 +19,15 @@ const roles = [
     blurb: "I want to teach",
     icon: Presentation,
   },
-];
+] as const;
 
-export function GetStartedForm({ plan }: { plan: PlanId }) {
-  const [role, setRole] = React.useState("student");
-  const selectedPlan = pricingPlans.find((item) => item.id === plan)!;
+export function GetStartedForm({ plan, initialRole }: { plan: { id: string; name: string; description: string; paid: boolean }; initialRole: "student" | "tutor" }) {
+  const [role, setRole] = React.useState(initialRole);
 
   return (
     <form action="/sign-up">
-      {role === "student" && <input type="hidden" name="plan" value={plan} />}
-      {role === "student" && <div className="mb-7 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-secondary/50 px-5 py-4"><div><p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Your plan</p><p className="mt-1 font-heading text-lg font-bold text-primary">{selectedPlan.name}</p><p className="mt-1 text-sm text-muted-foreground">{selectedPlan.description}</p></div><Link href="/pricing" className="text-sm font-medium text-primary hover:underline">Compare plans</Link></div>}
+      {role === "student" && <input type="hidden" name="plan" value={plan.id} />}
+      {role === "student" && <div className="mb-7 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-secondary/50 px-5 py-4"><div><p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Your selected plan</p><p className="mt-1 font-heading text-lg font-bold text-primary">{plan.name}</p><p className="mt-1 text-sm text-muted-foreground">{plan.description}</p>{plan.paid && <p className="mt-2 text-sm text-muted-foreground">Paid access starts after payment is available. New accounts begin on Free.</p>}</div><Link href="/pricing" className="text-sm font-medium text-primary hover:underline">Compare plans</Link></div>}
       <fieldset>
         <legend className="sr-only">I am signing up as</legend>
         <div className="grid grid-cols-2 gap-3 sm:gap-4">
